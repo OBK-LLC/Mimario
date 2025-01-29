@@ -25,7 +25,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 
   const exampleQuestions = [
     "Yapı ruhsatı için gerekli belgeler nelerdir?",
-    "İmar barışı nedir ve nasıl başvurulur?",
+    "Yangın merdivenine, ne zaman ihtiyaç duyulur?",
     "Bina yüksekliği hesaplama yöntemi nedir?",
   ];
 
