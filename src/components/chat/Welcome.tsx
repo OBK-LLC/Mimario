@@ -30,6 +30,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { ChatHistory } from "../../types/chat";
 import { useTheme } from "@mui/material/styles";
+import { useMediaQuery } from "@mui/material";
 
 interface EditDialogProps {
   open: boolean;
@@ -108,6 +109,7 @@ export const Welcome: React.FC<WelcomeProps> = ({
     title: string;
   } | null>(null);
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const handleDelete = (e: React.MouseEvent, chatId: string) => {
     e.stopPropagation();
@@ -195,7 +197,7 @@ export const Welcome: React.FC<WelcomeProps> = ({
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: "background.default",
-        p: 3,
+        p: { xs: 2, md: 3 },
       }}
     >
       <Grid container spacing={4} maxWidth="1200px" margin="auto">
@@ -216,6 +218,7 @@ export const Welcome: React.FC<WelcomeProps> = ({
                     : "linear-gradient(45deg, #000000 30%, #333333 90%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
+                fontSize: { xs: "2.5rem", md: "3.75rem" },
               }}
             >
               Mimario
@@ -228,6 +231,7 @@ export const Welcome: React.FC<WelcomeProps> = ({
                 mb: 3,
                 color: "text.secondary",
                 fontWeight: 500,
+                fontSize: { xs: "1.5rem", md: "2.125rem" },
               }}
             >
               Mimari AI Asistanınız
@@ -393,12 +397,14 @@ export const Welcome: React.FC<WelcomeProps> = ({
           </Paper>
         </Grid>
       </Grid>
-      <EditDialog
-        open={!!editingChat}
-        title={editingChat?.title || ""}
-        onClose={() => setEditingChat(null)}
-        onSave={handleSaveTitle}
-      />
+      {editingChat && (
+        <EditDialog
+          open={!!editingChat}
+          title={editingChat.title}
+          onClose={() => setEditingChat(null)}
+          onSave={handleSaveTitle}
+        />
+      )}
     </Box>
   );
 };

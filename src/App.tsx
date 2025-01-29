@@ -5,10 +5,15 @@ import {
   Box,
   IconButton,
   useMediaQuery,
+  Drawer,
 } from "@mui/material";
 import { v4 as uuidv4 } from "uuid";
 import { motion, AnimatePresence } from "framer-motion";
-import { Brightness4, Brightness7 } from "@mui/icons-material";
+import {
+  Brightness4,
+  Brightness7,
+  Menu as MenuIcon,
+} from "@mui/icons-material";
 import { getTheme } from "./theme/theme";
 import Sidebar from "./components/chat/Sidebar";
 import ChatContainer from "./components/chat/ChatContainer";
@@ -61,6 +66,9 @@ function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [showWelcome, setShowWelcome] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  const isMobile = useMediaQuery("(max-width:600px)");
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistories));
@@ -175,6 +183,10 @@ function App() {
     }, 1500);
   };
 
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
   const pageVariants = {
     initial: {
       opacity: 0,
@@ -235,23 +247,80 @@ function App() {
                 overflow: "hidden",
               }}
             >
-              <motion.div
-                initial={{ x: -280, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.4, delay: 0.2 }}
-                style={{ height: "100%" }}
-              >
-                <Sidebar
-                  chatHistories={chatHistories}
-                  selectedChatId={selectedChatId}
-                  onSelectChat={handleSelectChat}
-                  onNewChat={handleNewChat}
-                  onDeleteChat={handleDeleteChat}
-                  onEditChatTitle={handleEditChatTitle}
-                  onToggleTheme={toggleColorMode}
-                  isDarkMode={mode === "dark"}
-                />
-              </motion.div>
+              {isMobile && (
+                <IconButton
+                  color="inherit"
+                  aria-label="open drawer"
+                  edge="start"
+                  onClick={handleDrawerToggle}
+                  sx={{
+                    position: "fixed",
+                    left: 16,
+                    top: 16,
+                    zIndex: 1100,
+                    bgcolor: "background.paper",
+                    boxShadow: 2,
+                    "&:hover": {
+                      bgcolor: "background.paper",
+                      boxShadow: 3,
+                    },
+                  }}
+                >
+                  <MenuIcon />
+                </IconButton>
+              )}
+
+              {!isMobile ? (
+                <motion.div
+                  initial={{ x: -280, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 0.4, delay: 0.2 }}
+                  style={{ height: "100%" }}
+                >
+                  <Sidebar
+                    chatHistories={chatHistories}
+                    selectedChatId={selectedChatId}
+                    onSelectChat={handleSelectChat}
+                    onNewChat={handleNewChat}
+                    onDeleteChat={handleDeleteChat}
+                    onEditChatTitle={handleEditChatTitle}
+                    onToggleTheme={toggleColorMode}
+                    isDarkMode={mode === "dark"}
+                  />
+                </motion.div>
+              ) : (
+                <Drawer
+                  variant="temporary"
+                  open={mobileOpen}
+                  onClose={handleDrawerToggle}
+                  ModalProps={{
+                    keepMounted: true,
+                  }}
+                  sx={{
+                    "& .MuiDrawer-paper": {
+                      boxSizing: "border-box",
+                      width: 280,
+                    },
+                  }}
+                >
+                  <Sidebar
+                    chatHistories={chatHistories}
+                    selectedChatId={selectedChatId}
+                    onSelectChat={(chatId) => {
+                      handleSelectChat(chatId);
+                      handleDrawerToggle();
+                    }}
+                    onNewChat={() => {
+                      handleNewChat();
+                      handleDrawerToggle();
+                    }}
+                    onDeleteChat={handleDeleteChat}
+                    onEditChatTitle={handleEditChatTitle}
+                    onToggleTheme={toggleColorMode}
+                    isDarkMode={mode === "dark"}
+                  />
+                </Drawer>
+              )}
               <motion.div
                 initial={{ x: 50, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
@@ -264,6 +333,7 @@ function App() {
                     display: "flex",
                     flexDirection: "column",
                     height: "100%",
+                    pt: isMobile ? 7 : 0,
                   }}
                 >
                   <ChatContainer
