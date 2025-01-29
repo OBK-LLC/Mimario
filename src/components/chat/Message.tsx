@@ -1,9 +1,12 @@
 import React from "react";
 import { Paper, Typography, Box } from "@mui/material";
 import { MessageProps } from "../../types/chat";
+import { useTheme } from "@mui/material/styles";
 
 export const Message: React.FC<MessageProps> = ({ message }) => {
   const isAI = message.sender === "ai";
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === "dark";
 
   return (
     <Box
@@ -37,7 +40,11 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
         <Typography
           variant="caption"
           sx={{
-            color: isAI ? "text.secondary" : "rgba(255, 255, 255, 0.7)",
+            color: isAI
+              ? "text.secondary"
+              : isDarkMode
+              ? "rgba(0, 0, 0, 0.7)"
+              : "rgba(255, 255, 255, 0.85)",
             display: "block",
             mt: 0.5,
             textAlign: isAI ? "left" : "right",

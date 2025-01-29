@@ -1,8 +1,11 @@
 import React from "react";
-import { Box, Paper } from "@mui/material";
+import { Box, Paper, useTheme } from "@mui/material";
 import { motion, Variants } from "framer-motion";
 
 const LoadingMessage = () => {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === "dark";
+
   const dotVariants: Variants = {
     initial: { scale: 0.8, opacity: 0.4 },
     animate: {
@@ -47,7 +50,7 @@ const LoadingMessage = () => {
             style={{
               width: 8,
               height: 8,
-              backgroundColor: "black",
+              backgroundColor: isDarkMode ? "#E0E0E0" : "#000000",
               borderRadius: "50%",
               animationDelay: `${i * 0.2}s`,
             }}

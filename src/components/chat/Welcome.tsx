@@ -29,6 +29,7 @@ import {
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChatHistory } from "../../types/chat";
+import { useTheme } from "@mui/material/styles";
 
 interface EditDialogProps {
   open: boolean;
@@ -106,6 +107,7 @@ export const Welcome: React.FC<WelcomeProps> = ({
     id: string;
     title: string;
   } | null>(null);
+  const theme = useTheme();
 
   const handleDelete = (e: React.MouseEvent, chatId: string) => {
     e.stopPropagation();
@@ -208,7 +210,10 @@ export const Welcome: React.FC<WelcomeProps> = ({
               sx={{
                 fontWeight: 700,
                 mb: 2,
-                background: "linear-gradient(45deg, #000000 30%, #333333 90%)",
+                background:
+                  theme.palette.mode === "dark"
+                    ? "linear-gradient(45deg, #FFFFFF 30%, #E0E0E0 90%)"
+                    : "linear-gradient(45deg, #000000 30%, #333333 90%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
               }}

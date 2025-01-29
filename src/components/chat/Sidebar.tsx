@@ -24,9 +24,12 @@ import {
   Edit as EditIcon,
   Close as CloseIcon,
   Save as SaveIcon,
+  Brightness4,
+  Brightness7,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { SidebarProps } from "../../types/chat";
+import { useTheme } from "@mui/material/styles";
 
 interface EditDialogProps {
   open: boolean;
@@ -87,6 +90,8 @@ const EditDialog: React.FC<EditDialogProps> = ({
 interface ExtendedSidebarProps extends SidebarProps {
   onDeleteChat?: (chatId: string) => void;
   onEditChatTitle?: (chatId: string, newTitle: string) => void;
+  onToggleTheme?: () => void;
+  isDarkMode?: boolean;
 }
 
 export const Sidebar: React.FC<ExtendedSidebarProps> = ({
@@ -96,11 +101,14 @@ export const Sidebar: React.FC<ExtendedSidebarProps> = ({
   onNewChat,
   onDeleteChat,
   onEditChatTitle,
+  onToggleTheme,
+  isDarkMode,
 }) => {
   const [editingChat, setEditingChat] = useState<{
     id: string;
     title: string;
   } | null>(null);
+  const theme = useTheme();
 
   const handleDelete = (e: React.MouseEvent, chatId: string) => {
     e.stopPropagation();
@@ -232,6 +240,34 @@ export const Sidebar: React.FC<ExtendedSidebarProps> = ({
           ))
         )}
       </List>
+      <Divider />
+      <Box
+        sx={{
+          p: 2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Typography variant="body2" color="text.secondary">
+          Tema
+        </Typography>
+        <IconButton
+          onClick={onToggleTheme}
+          sx={{
+            color: "text.secondary",
+            "&:hover": {
+              backgroundColor: "action.hover",
+            },
+          }}
+        >
+          {isDarkMode ? (
+            <Brightness7 fontSize="small" />
+          ) : (
+            <Brightness4 fontSize="small" />
+          )}
+        </IconButton>
+      </Box>
       <EditDialog
         open={!!editingChat}
         title={editingChat?.title || ""}

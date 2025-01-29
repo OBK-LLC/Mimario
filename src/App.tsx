@@ -1,23 +1,43 @@
 import { useState, useEffect } from "react";
-import { ThemeProvider, CssBaseline, Box } from "@mui/material";
+import {
+  ThemeProvider,
+  CssBaseline,
+  Box,
+  IconButton,
+  useMediaQuery,
+} from "@mui/material";
 import { v4 as uuidv4 } from "uuid";
 import { motion, AnimatePresence } from "framer-motion";
-import theme from "./theme/theme";
+import { Brightness4, Brightness7 } from "@mui/icons-material";
+import { getTheme } from "./theme/theme";
 import Sidebar from "./components/chat/Sidebar";
 import ChatContainer from "./components/chat/ChatContainer";
 import Welcome from "./components/chat/Welcome";
 import { Message, ChatHistory } from "./types/chat";
 
 const STORAGE_KEY = "mimario-chat-histories";
+const THEME_MODE_KEY = "mimario-theme-mode";
 
 function App() {
-  // Local storage'dan başlangıç değerini al
+  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+  const [mode, setMode] = useState<"light" | "dark">(
+    (localStorage.getItem(THEME_MODE_KEY) as "light" | "dark") ||
+      (prefersDarkMode ? "dark" : "light")
+  );
+
+  const theme = getTheme(mode);
+
+  const toggleColorMode = () => {
+    const newMode = mode === "light" ? "dark" : "light";
+    setMode(newMode);
+    localStorage.setItem(THEME_MODE_KEY, newMode);
+  };
+
   const initialChatHistories = () => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // Tarihleri string'den Date objesine çevir
         return parsed.map((chat: ChatHistory) => ({
           ...chat,
           createdAt: new Date(chat.createdAt),
@@ -42,7 +62,6 @@ function App() {
   const [showWelcome, setShowWelcome] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Chat geçmişi değiştiğinde local storage'ı güncelle
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistories));
   }, [chatHistories]);
@@ -116,7 +135,6 @@ function App() {
     const updatedMessages = [...messages, newMessage];
     setMessages(updatedMessages);
 
-    // Update chat history
     setChatHistories(
       chatHistories.map((chat) =>
         chat.id === selectedChatId
@@ -129,7 +147,6 @@ function App() {
       )
     );
 
-    // AI yanıtı simülasyonu
     setIsGenerating(true);
     setTimeout(() => {
       const aiResponse: Message = {
@@ -231,6 +248,8 @@ function App() {
                   onNewChat={handleNewChat}
                   onDeleteChat={handleDeleteChat}
                   onEditChatTitle={handleEditChatTitle}
+                  onToggleTheme={toggleColorMode}
+                  isDarkMode={mode === "dark"}
                 />
               </motion.div>
               <motion.div
