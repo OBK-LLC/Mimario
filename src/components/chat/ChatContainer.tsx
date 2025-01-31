@@ -71,6 +71,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
           p: 3,
           display: "flex",
           flexDirection: "column",
+          pb: 0,
         }}
       >
         {messages.length === 0 && !isGenerating && (
@@ -173,13 +174,19 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         </AnimatePresence>
         <div ref={messagesEndRef} />
       </Box>
-      <motion.div
-        initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.3, duration: 0.4 }}
+      <Box
+        sx={{
+          borderTop: "1px solid",
+          borderColor: "divider",
+          backgroundColor: "background.paper",
+          p: 2,
+          display: "flex",
+          alignItems: "center",
+          height: "69px",
+        }}
       >
         <ChatInput onSendMessage={onSendMessage} disabled={isGenerating} />
-      </motion.div>
+      </Box>
     </Box>
   );
 };

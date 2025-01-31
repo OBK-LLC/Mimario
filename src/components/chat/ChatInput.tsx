@@ -30,9 +30,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         p: "8px 16px",
         display: "flex",
         alignItems: "center",
-        backgroundColor: "background.paper",
-        borderTop: "1px solid",
-        borderColor: "divider",
+        backgroundColor: "background.default",
+        width: "100%",
+        borderRadius: 2,
       }}
     >
       <InputBase
@@ -48,16 +48,16 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         onKeyPress={handleKeyPress}
+        disabled={disabled}
         multiline
         maxRows={4}
-        disabled={disabled}
       />
       <IconButton
         sx={{
           p: "10px",
           color: "primary.main",
           "&:hover": {
-            backgroundColor: "rgba(0, 0, 0, 0.04)",
+            backgroundColor: "action.hover",
           },
         }}
         onClick={handleSend}

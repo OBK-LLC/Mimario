@@ -9,11 +9,7 @@ import {
 } from "@mui/material";
 import { v4 as uuidv4 } from "uuid";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Brightness4,
-  Brightness7,
-  Menu as MenuIcon,
-} from "@mui/icons-material";
+import { Menu as MenuIcon } from "@mui/icons-material";
 import { getTheme } from "./theme/theme";
 import Sidebar from "./components/chat/Sidebar";
 import ChatContainer from "./components/chat/ChatContainer";

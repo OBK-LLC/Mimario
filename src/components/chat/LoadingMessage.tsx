@@ -1,4 +1,3 @@
-import React from "react";
 import { Box, Paper, useTheme } from "@mui/material";
 import { motion, Variants } from "framer-motion";
 

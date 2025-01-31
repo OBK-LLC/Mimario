@@ -19,7 +19,6 @@ import {
 import {
   Chat as ChatIcon,
   Add as AddIcon,
-  History as HistoryIcon,
   Delete as DeleteIcon,
   Edit as EditIcon,
   Close as CloseIcon,
@@ -27,9 +26,7 @@ import {
   Brightness4,
   Brightness7,
 } from "@mui/icons-material";
-import { motion, AnimatePresence } from "framer-motion";
 import { SidebarProps } from "../../types/chat";
-import { useTheme } from "@mui/material/styles";
 
 interface EditDialogProps {
   open: boolean;
@@ -108,7 +105,6 @@ export const Sidebar: React.FC<ExtendedSidebarProps> = ({
     id: string;
     title: string;
   } | null>(null);
-  const theme = useTheme();
 
   const handleDelete = (e: React.MouseEvent, chatId: string) => {
     e.stopPropagation();
@@ -240,13 +236,14 @@ export const Sidebar: React.FC<ExtendedSidebarProps> = ({
           ))
         )}
       </List>
-      <Divider />
       <Box
         sx={{
           p: 2,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          borderTop: "1px solid",
+          borderColor: "divider",
         }}
       >
         <Typography variant="body2" color="text.secondary">

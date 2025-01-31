@@ -30,7 +30,6 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { ChatHistory } from "../../types/chat";
 import { useTheme } from "@mui/material/styles";
-import { useMediaQuery } from "@mui/material";
 
 interface EditDialogProps {
   open: boolean;
@@ -109,7 +108,6 @@ export const Welcome: React.FC<WelcomeProps> = ({
     title: string;
   } | null>(null);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const handleDelete = (e: React.MouseEvent, chatId: string) => {
     e.stopPropagation();
