@@ -395,36 +395,36 @@ export const Welcome: React.FC<WelcomeProps> = ({
           </Box>
         </Grid>
 
-        {isLoggedIn && (
-          <Grid item xs={12} md={5}>
-            <Paper
-              component={motion.div}
+        <Grid item xs={12} md={5}>
+          <Paper
+            component={motion.div}
+            variants={itemVariants}
+            elevation={0}
+            sx={{
+              p: 3,
+              backgroundColor: "background.paper",
+              borderRadius: 4,
+            }}
+          >
+            <Typography
+              component={motion.h3}
+              variant="h6"
               variants={itemVariants}
-              elevation={0}
               sx={{
-                p: 3,
-                backgroundColor: "background.paper",
-                borderRadius: 4,
+                mb: 2,
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                color: "text.primary",
+                fontWeight: 600,
               }}
             >
-              <Typography
-                component={motion.h3}
-                variant="h6"
-                variants={itemVariants}
-                sx={{
-                  mb: 2,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  color: "text.primary",
-                  fontWeight: 600,
-                }}
-              >
-                <HistoryIcon /> Önceki Sohbetleriniz
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-              <AnimatePresence>
-                {recentChats.length > 0 ? (
+              <HistoryIcon /> Önceki Sohbetleriniz
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            <AnimatePresence>
+              {isLoggedIn ? (
+                recentChats.length > 0 ? (
                   <List sx={{ mb: 2 }}>
                     {recentChats.map((chat, index) => (
                       <ListItem
@@ -509,11 +509,24 @@ export const Welcome: React.FC<WelcomeProps> = ({
                   >
                     Henüz sohbet geçmişiniz bulunmuyor
                   </Typography>
-                )}
-              </AnimatePresence>
-            </Paper>
-          </Grid>
-        )}
+                )
+              ) : (
+                <Typography
+                  component={motion.p}
+                  variant="body1"
+                  color="text.secondary"
+                  variants={itemVariants}
+                  sx={{
+                    textAlign: "center",
+                    py: 4,
+                  }}
+                >
+                  Önceki sohbetlerinizi görmek için giriş yapın
+                </Typography>
+              )}
+            </AnimatePresence>
+          </Paper>
+        </Grid>
       </Grid>
       {editingChat && (
         <EditDialog
