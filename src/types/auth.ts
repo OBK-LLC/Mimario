@@ -12,12 +12,20 @@ export interface SignupFormData {
   agreeToTerms: boolean;
 }
 
+export interface ForgotPasswordFormData {
+  email: string;
+}
+
 export interface LoginProps {
   onLogin: () => void;
 }
 
 export interface SignupProps {
   onSignup: () => void;
+}
+
+export interface ForgotPasswordProps {
+  onResetRequest: (email: string) => void;
 }
 
 export interface AuthProps {

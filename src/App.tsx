@@ -17,6 +17,7 @@ import Home from "./pages/home/Home";
 import Chat from "./pages/chat/Chat";
 import Login from "./pages/login/Login";
 import Signup from "./pages/signup/Signup";
+import ForgotPassword from "./pages/forgot-password/ForgotPassword";
 
 const STORAGE_KEY = "mimario-chat-histories";
 const THEME_MODE_KEY = "mimario-theme-mode";
@@ -230,6 +231,11 @@ function AppContent() {
     navigate("/");
   };
 
+  const handlePasswordReset = (email: string) => {
+    console.log(`Şifre sıfırlama bağlantısı gönderildi: ${email}`);
+    // Normalde burada backend'e istek gönderilecek
+  };
+
   const handleLogout = () => {
     setIsLoggedIn(false);
     navigate("/");
@@ -280,6 +286,21 @@ function AppContent() {
                 style={{ width: "100%", height: "100vh" }}
               >
                 <Signup onSignup={handleSignup} />
+              </motion.div>
+            }
+          />
+
+          <Route
+            path="/forgot-password"
+            element={
+              <motion.div
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                variants={pageVariants}
+                style={{ width: "100%", height: "100vh" }}
+              >
+                <ForgotPassword onResetRequest={handlePasswordReset} />
               </motion.div>
             }
           />
