@@ -8,11 +8,16 @@ import {
   Navigate,
   useNavigate,
   useParams,
+  useLocation,
 } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { getTheme } from "./theme/theme";
 import { Message, ChatHistory } from "./types/chat";
 import Home from "./pages/home/Home";
 import Chat from "./pages/chat/Chat";
+import Login from "./pages/login/Login";
+import Signup from "./pages/signup/Signup";
+import ForgotPassword from "./pages/forgot-password/ForgotPassword";
 
 const STORAGE_KEY = "mimario-chat-histories";
 const THEME_MODE_KEY = "mimario-theme-mode";
@@ -32,13 +37,41 @@ function ChatWrapper(props: any) {
 
 function AppContent() {
   const navigate = useNavigate();
+  const location = useLocation();
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
   const [mode, setMode] = useState<"light" | "dark">(
     (localStorage.getItem(THEME_MODE_KEY) as "light" | "dark") ||
       (prefersDarkMode ? "dark" : "light")
   );
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
   const theme = getTheme(mode);
+
+  const pageVariants = {
+    initial: {
+      opacity: 0,
+      x: 40,
+      scale: 0.98,
+    },
+    animate: {
+      opacity: 1,
+      x: 0,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    },
+    exit: {
+      opacity: 0,
+      x: -40,
+      scale: 0.98,
+      transition: {
+        duration: 0.4,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    },
+  };
 
   const toggleColorMode = () => {
     const newMode = mode === "light" ? "dark" : "light";
@@ -188,6 +221,26 @@ function AppContent() {
     }, 1500);
   };
 
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+    navigate("/");
+  };
+
+  const handleSignup = () => {
+    setIsLoggedIn(true);
+    navigate("/");
+  };
+
+  const handlePasswordReset = (email: string) => {
+    console.log(`Şifre sıfırlama bağlantısı gönderildi: ${email}`);
+    // Normalde burada backend'e istek gönderilecek
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    navigate("/");
+  };
+
   const commonChatProps = {
     chatHistories,
     selectedChatId,
@@ -205,25 +258,92 @@ function AppContent() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <Home
-              chatHistories={chatHistories}
-              onStartChat={handleNewChat}
-              onSelectChat={handleSelectChat}
-              onDeleteChat={handleDeleteChat}
-              onEditChatTitle={handleEditChatTitle}
-            />
-          }
-        />
-        <Route
-          path="/chat/:chatId"
-          element={<ChatWrapper {...commonChatProps} />}
-        />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route
+            path="/login"
+            element={
+              <motion.div
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                variants={pageVariants}
+                style={{ width: "100%", height: "100vh" }}
+              >
+                <Login onLogin={handleLogin} />
+              </motion.div>
+            }
+          />
+
+          <Route
+            path="/signup"
+            element={
+              <motion.div
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                variants={pageVariants}
+                style={{ width: "100%", height: "100vh" }}
+              >
+                <Signup onSignup={handleSignup} />
+              </motion.div>
+            }
+          />
+
+          <Route
+            path="/forgot-password"
+            element={
+              <motion.div
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                variants={pageVariants}
+                style={{ width: "100%", height: "100vh" }}
+              >
+                <ForgotPassword onResetRequest={handlePasswordReset} />
+              </motion.div>
+            }
+          />
+
+          <Route
+            path="/"
+            element={
+              <motion.div
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                variants={pageVariants}
+                style={{ width: "100%", height: "100vh" }}
+              >
+                <Home
+                  chatHistories={chatHistories}
+                  onStartChat={handleNewChat}
+                  onSelectChat={handleSelectChat}
+                  onDeleteChat={handleDeleteChat}
+                  onEditChatTitle={handleEditChatTitle}
+                  isLoggedIn={isLoggedIn}
+                  onLogout={handleLogout}
+                />
+              </motion.div>
+            }
+          />
+          <Route
+            path="/chat/:chatId"
+            element={
+              <motion.div
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                variants={pageVariants}
+                style={{ width: "100%", height: "100vh" }}
+              >
+                <ChatWrapper {...commonChatProps} />
+              </motion.div>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AnimatePresence>
     </ThemeProvider>
   );
 }
