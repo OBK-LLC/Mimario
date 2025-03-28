@@ -50,12 +50,9 @@ const Login = ({ onLogin }: LoginProps) => {
   };
 
   const handleGoogleLogin = () => {
-    // TODO: Implement actual Google login logic
+    // TODO: Google OAuth URL'sine yönlendir
+    // window.location.href = "GOOGLE_AUTH_URL_BURAYA_EKLENECEK";
     console.log("Google login initiated");
-    // When integrated with a real backend:
-    // 1. Redirect to Google auth URL or use a library like firebase auth
-    // 2. Handle the authentication response
-    // 3. Call onLogin() after successful authentication
   };
 
   return (

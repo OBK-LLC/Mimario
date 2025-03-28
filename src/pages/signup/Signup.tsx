@@ -72,12 +72,9 @@ const Signup = ({ onSignup }: SignupProps) => {
   };
 
   const handleGoogleSignup = () => {
-    // TODO: Implement actual Google signup logic
+    // TODO: Google OAuth URL'sine yönlendir
+    // window.location.href = "GOOGLE_AUTH_URL_BURAYA_EKLENECEK";
     console.log("Google signup initiated");
-    // When integrated with a real backend:
-    // 1. Redirect to Google auth URL or use a library like firebase auth
-    // 2. Handle the authentication response
-    // 3. Call onSignup() after successful authentication
   };
 
   return (
