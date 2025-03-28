@@ -1,0 +1,74 @@
+.sidebar {
+  width: 280px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.buttonContainer {
+  padding: 16px;
+}
+
+.newChatButton {
+  width: 100%;
+}
+
+.chatsList {
+  flex: 1;
+  overflow: auto;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.emptyChatMessage {
+  padding: 16px;
+  text-align: center;
+}
+
+.chatItem {
+  position: relative;
+}
+
+.chatItem:hover .chatActions {
+  opacity: 1;
+}
+
+.chatItemButton {
+  border-radius: 16px;
+  margin-bottom: 8px;
+  padding-right: 64px;
+}
+
+.chatItemText {
+  font-weight: 500;
+}
+
+.chatActionsContainer {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.actionIcon {
+  padding: 6px;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  padding-left: 23px;
+  padding-right: 16px;
+  border-top: 1px solid;
+}
+
+.themeToggle {
+  color: rgba(0, 0, 0, 0.6);
+  padding: 8px;
+}

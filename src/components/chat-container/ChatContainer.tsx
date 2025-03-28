@@ -1,11 +1,15 @@
 import React, { useRef, useEffect } from "react";
 import { Box, Typography, useTheme, Button, Stack } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
-import Message from "./Message";
-import ChatInput from "./ChatInput";
-import LoadingMessage from "./LoadingMessage";
+import Message from "../message/Message";
+import ChatInput from "../chat-input/ChatInput";
+import LoadingMessage from "../loading-message/LoadingMessage";
 import { ChatContainerProps } from "../../types/chat";
-import { Send as SendIcon } from "@mui/icons-material";
+import {
+  Send as SendIcon,
+  ArrowForward as ArrowIcon,
+} from "@mui/icons-material";
+import styles from "./chat-container.module.css";
 
 export const ChatContainer: React.FC<ChatContainerProps> = ({
   messages,
@@ -57,51 +61,25 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
       variants={containerVariants}
       initial="hidden"
       animate="visible"
+      className={styles.container}
       sx={{
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
         backgroundColor: "background.default",
       }}
     >
-      <Box
-        sx={{
-          flex: 1,
-          overflow: "auto",
-          p: 3,
-          display: "flex",
-          flexDirection: "column",
-          pb: 0,
-        }}
-      >
+      <Box className={styles.messagesContainer}>
         {messages.length === 0 && !isGenerating && (
-          <Box
-            sx={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
+          <Box className={styles.emptyStateContainer}>
             <motion.div
               variants={emptyStateVariants}
-              style={{
-                textAlign: "center",
-                maxWidth: "600px",
-              }}
+              className={styles.emptyStateContent}
             >
               <Typography
-                variant="h5"
+                variant="h4"
+                align="center"
+                className={styles.welcomeTitle}
                 sx={{
                   fontWeight: 600,
-                  mb: 2,
-                  background:
-                    theme.palette.mode === "dark"
-                      ? "linear-gradient(45deg, #FFFFFF 30%, #E0E0E0 90%)"
-                      : "linear-gradient(45deg, #000000 30%, #333333 90%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
+                  mb: 3,
                 }}
               >
                 Merhaba, ben Mimario!
@@ -109,40 +87,52 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               <Typography
                 variant="body1"
                 color="text.secondary"
-                sx={{ mb: 4, lineHeight: 1.6 }}
+                align="center"
+                className={styles.welcomeText}
+                sx={{
+                  maxWidth: 600,
+                  margin: "0 auto",
+                  mb: 5,
+                  fontSize: "1.1rem",
+                  lineHeight: 1.8,
+                }}
               >
                 Mimari mevzuatlar ve teknik konularda size yardımcı olmak için
                 buradayım. Aşağıdaki örnek sorulardan birini seçebilir veya
                 kendi sorunuzu yazabilirsiniz.
               </Typography>
-              <Stack spacing={2} sx={{ maxWidth: 500, mx: "auto" }}>
+              <Box maxWidth={600} mx="auto" sx={{ width: "100%" }}>
                 {exampleQuestions.map((question, index) => (
                   <Button
                     key={index}
                     variant="outlined"
-                    size="large"
+                    fullWidth
                     onClick={() => onSendMessage(question)}
-                    endIcon={<SendIcon />}
+                    endIcon={<ArrowIcon sx={{ marginLeft: 2, fontSize: 20 }} />}
+                    className={styles.exampleQuestionButton}
                     sx={{
                       justifyContent: "space-between",
                       textAlign: "left",
-                      py: 1.5,
-                      px: 2,
+                      py: 2.5,
+                      px: 3,
+                      mb: 3,
                       borderColor: "divider",
                       color: "text.primary",
+                      borderRadius: 2,
+                      width: "100%",
+                      maxWidth: "600px",
+                      display: "flex",
+                      alignItems: "center",
                       "&:hover": {
                         borderColor: "primary.main",
-                        bgcolor:
-                          theme.palette.mode === "dark"
-                            ? "rgba(255, 255, 255, 0.05)"
-                            : "rgba(0, 0, 0, 0.02)",
+                        bgcolor: "transparent",
                       },
                     }}
                   >
                     {question}
                   </Button>
                 ))}
-              </Stack>
+              </Box>
             </motion.div>
           </Box>
         )}
@@ -175,14 +165,10 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         <div ref={messagesEndRef} />
       </Box>
       <Box
+        className={styles.inputContainer}
         sx={{
-          borderTop: "1px solid",
           borderColor: "divider",
           backgroundColor: "background.paper",
-          p: 2,
-          display: "flex",
-          alignItems: "center",
-          height: "69px",
         }}
       >
         <ChatInput onSendMessage={onSendMessage} disabled={isGenerating} />

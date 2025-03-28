@@ -2,6 +2,7 @@ import React, { useState, KeyboardEvent } from "react";
 import { Paper, InputBase, IconButton } from "@mui/material";
 import { Send as SendIcon } from "@mui/icons-material";
 import { ChatInputProps } from "../../types/chat";
+import styles from "./chat-input.module.css";
 
 export const ChatInput: React.FC<ChatInputProps> = ({
   onSendMessage,
@@ -26,23 +27,15 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   return (
     <Paper
       elevation={0}
+      className={styles.inputContainer}
       sx={{
-        p: "8px 16px",
-        display: "flex",
-        alignItems: "center",
         backgroundColor: "background.default",
-        width: "100%",
-        borderRadius: 2,
       }}
     >
       <InputBase
-        sx={{
-          ml: 1,
-          flex: 1,
-          fontSize: "1rem",
-          "& input": {
-            padding: "8px 0",
-          },
+        className={styles.input}
+        classes={{
+          input: styles.inputField,
         }}
         placeholder="Mesajınızı yazın..."
         value={message}
@@ -53,12 +46,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         maxRows={4}
       />
       <IconButton
+        className={`${styles.sendButton} ${styles.sendButtonHover}`}
         sx={{
-          p: "10px",
           color: "primary.main",
-          "&:hover": {
-            backgroundColor: "action.hover",
-          },
         }}
         onClick={handleSend}
         disabled={!message.trim() || disabled}

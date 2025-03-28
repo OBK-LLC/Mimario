@@ -27,6 +27,7 @@ import {
   Brightness7,
 } from "@mui/icons-material";
 import { SidebarProps } from "../../types/chat";
+import styles from "./sidebar.module.css";
 
 interface EditDialogProps {
   open: boolean;
@@ -130,19 +131,16 @@ export const Sidebar: React.FC<ExtendedSidebarProps> = ({
 
   return (
     <Box
+      className={styles.sidebar}
       sx={{
-        width: 280,
-        height: "100%",
         backgroundColor: "background.paper",
         borderRight: "1px solid",
         borderColor: "divider",
-        display: "flex",
-        flexDirection: "column",
       }}
     >
-      <Box sx={{ p: 2 }}>
+      <Box className={styles.buttonContainer}>
         <Button
-          fullWidth
+          className={styles.newChatButton}
           variant="contained"
           startIcon={<AddIcon />}
           onClick={onNewChat}
@@ -158,32 +156,21 @@ export const Sidebar: React.FC<ExtendedSidebarProps> = ({
         </Button>
       </Box>
       <Divider />
-      <List sx={{ flex: 1, overflow: "auto", py: 0 }}>
+      <List className={styles.chatsList}>
         {chatHistories.length === 0 ? (
-          <Box sx={{ p: 2, textAlign: "center" }}>
+          <Box className={styles.emptyChatMessage}>
             <Typography variant="body2" color="text.secondary">
               Henüz sohbet bulunmuyor
             </Typography>
           </Box>
         ) : (
           chatHistories.map((chat) => (
-            <ListItem
-              key={chat.id}
-              disablePadding
-              sx={{
-                position: "relative",
-                "&:hover .chat-actions": {
-                  opacity: 1,
-                },
-              }}
-            >
+            <ListItem key={chat.id} disablePadding className={styles.chatItem}>
               <ListItemButton
                 selected={selectedChatId === chat.id}
                 onClick={() => onSelectChat(chat.id)}
+                className={styles.chatItemButton}
                 sx={{
-                  borderRadius: 2,
-                  mb: 1,
-                  pr: 8,
                   "&.Mui-selected": {
                     backgroundColor: "action.selected",
                   },
@@ -196,75 +183,62 @@ export const Sidebar: React.FC<ExtendedSidebarProps> = ({
                   primary={chat.title}
                   secondary={new Date(chat.updatedAt).toLocaleDateString()}
                   primaryTypographyProps={{
-                    fontWeight: 500,
+                    className: styles.chatItemText,
                   }}
                 />
-                <Box
-                  className="chat-actions"
-                  sx={{
-                    position: "absolute",
-                    right: 8,
-                    opacity: 0,
-                    transition: "opacity 0.2s",
-                    display: "flex",
-                    gap: 0.5,
-                  }}
-                >
-                  <IconButton
-                    size="small"
-                    onClick={(e) => handleEdit(e, chat)}
-                    sx={{
-                      color: "text.secondary",
-                      "&:hover": { color: "primary.main" },
-                    }}
-                  >
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={(e) => handleDelete(e, chat.id)}
-                    sx={{
-                      color: "text.secondary",
-                      "&:hover": { color: "error.main" },
-                    }}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </Box>
               </ListItemButton>
+              <Box
+                className={`${styles.chatActionsContainer} ${styles.chatActions}`}
+              >
+                <IconButton
+                  size="small"
+                  className={styles.actionIcon}
+                  onClick={(e) =>
+                    handleEdit(e, { id: chat.id, title: chat.title })
+                  }
+                  sx={{ color: "text.secondary" }}
+                >
+                  <EditIcon fontSize="small" />
+                </IconButton>
+                <IconButton
+                  size="small"
+                  className={styles.actionIcon}
+                  onClick={(e) => handleDelete(e, chat.id)}
+                  sx={{ color: "error.main" }}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </Box>
             </ListItem>
           ))
         )}
       </List>
-      <Box
-        sx={{
-          p: 2,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          borderTop: "1px solid",
-          borderColor: "divider",
-        }}
-      >
-        <Typography variant="body2" color="text.secondary">
-          Tema
-        </Typography>
-        <IconButton
-          onClick={onToggleTheme}
-          sx={{
-            color: "text.secondary",
-            "&:hover": {
-              backgroundColor: "action.hover",
-            },
-          }}
-        >
-          {isDarkMode ? (
-            <Brightness7 fontSize="small" />
-          ) : (
-            <Brightness4 fontSize="small" />
-          )}
-        </IconButton>
-      </Box>
+      {onToggleTheme && (
+        <>
+          <Divider />
+          <Box
+            className={styles.footer}
+            sx={{
+              borderColor: "divider",
+            }}
+          >
+            <Typography variant="body2" color="text.secondary">
+              Tema
+            </Typography>
+            <IconButton
+              onClick={onToggleTheme}
+              className={styles.themeToggle}
+              size="small"
+            >
+              {isDarkMode ? (
+                <Brightness7 fontSize="small" />
+              ) : (
+                <Brightness4 fontSize="small" />
+              )}
+            </IconButton>
+          </Box>
+        </>
+      )}
       <EditDialog
         open={!!editingChat}
         title={editingChat?.title || ""}
