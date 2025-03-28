@@ -1,5 +1,6 @@
 import { Box, Paper, useTheme } from "@mui/material";
 import { motion, Variants } from "framer-motion";
+import styles from "./loading-message.module.css";
 
 const LoadingMessage = () => {
   const theme = useTheme();
@@ -19,38 +20,24 @@ const LoadingMessage = () => {
   };
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "flex-start",
-        mb: 2,
-      }}
-    >
+    <Box className={styles.container}>
       <Paper
         elevation={0}
+        className={styles.bubble}
         sx={{
-          p: 2,
-          maxWidth: "70%",
           backgroundColor: "background.paper",
-          borderRadius: 2,
-          borderTopLeftRadius: 0,
-          display: "flex",
-          gap: 1,
-          alignItems: "center",
         }}
       >
         {[0, 1, 2].map((i) => (
           <motion.div
             key={i}
+            className={styles.dot}
             variants={dotVariants}
             initial="initial"
             animate="animate"
             custom={i}
             style={{
-              width: 8,
-              height: 8,
               backgroundColor: isDarkMode ? "#E0E0E0" : "#000000",
-              borderRadius: "50%",
               animationDelay: `${i * 0.2}s`,
             }}
             transition={{

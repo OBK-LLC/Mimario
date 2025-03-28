@@ -1,0 +1,44 @@
+.messageContainer {
+  display: flex;
+  margin-bottom: 16px; /* mb: 2 */
+}
+
+.aiMessage {
+  justify-content: flex-start;
+}
+
+.userMessage {
+  justify-content: flex-end;
+}
+
+.messageBubble {
+  padding: 16px; /* p: 2 */
+  max-width: 70%;
+  border-radius: 16px; /* borderRadius: 2 */
+}
+
+.aiMessageBubble {
+  border-top-left-radius: 0;
+}
+
+.userMessageBubble {
+  border-top-right-radius: 0;
+}
+
+.messageText {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.timestamp {
+  display: block;
+  margin-top: 4px; /* mt: 0.5 */
+}
+
+.aiTimestamp {
+  text-align: left;
+}
+
+.userTimestamp {
+  text-align: right;
+}

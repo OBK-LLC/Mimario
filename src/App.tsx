@@ -1,25 +1,37 @@
 import { useState, useEffect } from "react";
-import {
-  ThemeProvider,
-  CssBaseline,
-  Box,
-  IconButton,
-  useMediaQuery,
-  Drawer,
-} from "@mui/material";
+import { ThemeProvider, CssBaseline, useMediaQuery } from "@mui/material";
 import { v4 as uuidv4 } from "uuid";
-import { motion, AnimatePresence } from "framer-motion";
-import { Menu as MenuIcon } from "@mui/icons-material";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 import { getTheme } from "./theme/theme";
-import Sidebar from "./components/chat/Sidebar";
-import ChatContainer from "./components/chat/ChatContainer";
-import Welcome from "./components/chat/Welcome";
 import { Message, ChatHistory } from "./types/chat";
+import Home from "./pages/home/Home";
+import Chat from "./pages/chat/Chat";
 
 const STORAGE_KEY = "mimario-chat-histories";
 const THEME_MODE_KEY = "mimario-theme-mode";
 
-function App() {
+function ChatWrapper(props: any) {
+  const { chatId } = useParams();
+
+  useEffect(() => {
+    // Ensure chat selection is in sync with URL parameter
+    if (chatId && chatId !== props.selectedChatId) {
+      props.onSelectChat(chatId);
+    }
+  }, [chatId, props.selectedChatId, props.onSelectChat]);
+
+  return <Chat {...props} />;
+}
+
+function AppContent() {
+  const navigate = useNavigate();
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
   const [mode, setMode] = useState<"light" | "dark">(
     (localStorage.getItem(THEME_MODE_KEY) as "light" | "dark") ||
@@ -60,11 +72,7 @@ function App() {
     useState<ChatHistory[]>(initialChatHistories);
   const [selectedChatId, setSelectedChatId] = useState<string>();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [showWelcome, setShowWelcome] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
-
-  const isMobile = useMediaQuery("(max-width:600px)");
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistories));
@@ -83,7 +91,7 @@ function App() {
     setChatHistories([...chatHistories, newChat]);
     setSelectedChatId(newChatId);
     setMessages([]);
-    setShowWelcome(false);
+    navigate(`/chat/${newChatId}`);
   };
 
   const handleSelectChat = (chatId: string) => {
@@ -91,7 +99,7 @@ function App() {
     if (selectedChat) {
       setSelectedChatId(chatId);
       setMessages(selectedChat.messages);
-      setShowWelcome(false);
+      navigate(`/chat/${chatId}`);
     }
   };
 
@@ -104,10 +112,11 @@ function App() {
       if (lastChat) {
         setSelectedChatId(lastChat.id);
         setMessages(lastChat.messages);
+        navigate(`/chat/${lastChat.id}`);
       } else {
         setSelectedChatId(undefined);
         setMessages([]);
-        setShowWelcome(true);
+        navigate("/");
       }
     }
   };
@@ -179,171 +188,51 @@ function App() {
     }, 1500);
   };
 
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
-
-  const pageVariants = {
-    initial: {
-      opacity: 0,
-      scale: 0.98,
-    },
-    animate: {
-      opacity: 1,
-      scale: 1,
-      transition: {
-        duration: 0.4,
-        ease: "easeOut",
-      },
-    },
-    exit: {
-      opacity: 0,
-      scale: 1.02,
-      transition: {
-        duration: 0.3,
-        ease: "easeIn",
-      },
-    },
+  const commonChatProps = {
+    chatHistories,
+    selectedChatId,
+    messages,
+    isGenerating,
+    onSelectChat: handleSelectChat,
+    onNewChat: handleNewChat,
+    onDeleteChat: handleDeleteChat,
+    onEditChatTitle: handleEditChatTitle,
+    onToggleTheme: toggleColorMode,
+    isDarkMode: mode === "dark",
+    onSendMessage: handleSendMessage,
   };
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <AnimatePresence mode="wait">
-        {showWelcome ? (
-          <motion.div
-            key="welcome"
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            variants={pageVariants}
-            style={{ width: "100%", height: "100vh" }}
-          >
-            <Welcome
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <Home
+              chatHistories={chatHistories}
               onStartChat={handleNewChat}
               onSelectChat={handleSelectChat}
-              chatHistories={chatHistories}
               onDeleteChat={handleDeleteChat}
               onEditChatTitle={handleEditChatTitle}
             />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="chat"
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            variants={pageVariants}
-            style={{ width: "100%", height: "100vh" }}
-          >
-            <Box
-              sx={{
-                height: "100vh",
-                display: "flex",
-                overflow: "hidden",
-              }}
-            >
-              {isMobile && (
-                <IconButton
-                  color="inherit"
-                  aria-label="open drawer"
-                  edge="start"
-                  onClick={handleDrawerToggle}
-                  sx={{
-                    position: "fixed",
-                    left: 16,
-                    top: 16,
-                    zIndex: 1100,
-                    bgcolor: "background.paper",
-                    boxShadow: 2,
-                    "&:hover": {
-                      bgcolor: "background.paper",
-                      boxShadow: 3,
-                    },
-                  }}
-                >
-                  <MenuIcon />
-                </IconButton>
-              )}
-
-              {!isMobile ? (
-                <motion.div
-                  initial={{ x: -280, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ duration: 0.4, delay: 0.2 }}
-                  style={{ height: "100%" }}
-                >
-                  <Sidebar
-                    chatHistories={chatHistories}
-                    selectedChatId={selectedChatId}
-                    onSelectChat={handleSelectChat}
-                    onNewChat={handleNewChat}
-                    onDeleteChat={handleDeleteChat}
-                    onEditChatTitle={handleEditChatTitle}
-                    onToggleTheme={toggleColorMode}
-                    isDarkMode={mode === "dark"}
-                  />
-                </motion.div>
-              ) : (
-                <Drawer
-                  variant="temporary"
-                  open={mobileOpen}
-                  onClose={handleDrawerToggle}
-                  ModalProps={{
-                    keepMounted: true,
-                  }}
-                  sx={{
-                    "& .MuiDrawer-paper": {
-                      boxSizing: "border-box",
-                      width: 280,
-                    },
-                  }}
-                >
-                  <Sidebar
-                    chatHistories={chatHistories}
-                    selectedChatId={selectedChatId}
-                    onSelectChat={(chatId) => {
-                      handleSelectChat(chatId);
-                      handleDrawerToggle();
-                    }}
-                    onNewChat={() => {
-                      handleNewChat();
-                      handleDrawerToggle();
-                    }}
-                    onDeleteChat={handleDeleteChat}
-                    onEditChatTitle={handleEditChatTitle}
-                    onToggleTheme={toggleColorMode}
-                    isDarkMode={mode === "dark"}
-                  />
-                </Drawer>
-              )}
-              <motion.div
-                initial={{ x: 50, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.4, delay: 0.3 }}
-                style={{ flex: 1, height: "100%" }}
-              >
-                <Box
-                  sx={{
-                    flex: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                    height: "100%",
-                    pt: isMobile ? 7 : 0,
-                  }}
-                >
-                  <ChatContainer
-                    messages={messages}
-                    onSendMessage={handleSendMessage}
-                    isGenerating={isGenerating}
-                  />
-                </Box>
-              </motion.div>
-            </Box>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          }
+        />
+        <Route
+          path="/chat/:chatId"
+          element={<ChatWrapper {...commonChatProps} />}
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </ThemeProvider>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
   );
 }
 

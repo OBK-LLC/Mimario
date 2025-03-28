@@ -1,0 +1,30 @@
+.inputContainer {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border-radius: 16px; /* borderRadius: 2 */
+}
+
+.input {
+  margin-left: 8px; /* ml: 1 */
+  flex: 1;
+  font-size: 1rem;
+}
+
+.inputField {
+  padding: 8px 0;
+}
+
+.sendButton {
+  padding: 10px;
+}
+
+.sendButtonHover:hover {
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.04
+  ); /* action.hover - light approximation */
+}

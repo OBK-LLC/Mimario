@@ -1,0 +1,61 @@
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.messagesContainer {
+  flex: 1;
+  overflow: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0;
+}
+
+.emptyStateContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 36px;
+  padding-bottom: 36px;
+}
+
+.emptyStateContent {
+  text-align: center;
+  width: 100%;
+  padding: 0 16px;
+}
+
+.welcomeTitle {
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.welcomeText {
+  margin-bottom: 48px;
+  line-height: 1.6;
+}
+
+.exampleQuestionStack {
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.exampleQuestionButton {
+  text-align: left;
+  margin-bottom: 24px !important;
+  height: 62px;
+  border-width: 1px !important;
+}
+
+.inputContainer {
+  border-top: 1px solid;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  height: 69px;
+}
