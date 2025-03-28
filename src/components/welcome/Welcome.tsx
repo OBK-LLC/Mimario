@@ -367,9 +367,7 @@ export const Welcome: React.FC<WelcomeProps> = ({
                     whileTap="tap"
                   >
                     <Button
-                      onClick={() => {
-                        onLogout();
-                      }}
+                      onClick={onLogout}
                       variant="outlined"
                       color="primary"
                       size="large"
