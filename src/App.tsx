@@ -15,6 +15,8 @@ import { getTheme } from "./theme/theme";
 import { Message, ChatHistory } from "./types/chat";
 import Home from "./pages/home/Home";
 import Chat from "./pages/chat/Chat";
+import Login from "./pages/login/Login";
+import Signup from "./pages/signup/Signup";
 
 const STORAGE_KEY = "mimario-chat-histories";
 const THEME_MODE_KEY = "mimario-theme-mode";
@@ -40,31 +42,32 @@ function AppContent() {
     (localStorage.getItem(THEME_MODE_KEY) as "light" | "dark") ||
       (prefersDarkMode ? "dark" : "light")
   );
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
   const theme = getTheme(mode);
 
   const pageVariants = {
     initial: {
       opacity: 0,
-      x: 40,
-      scale: 0.98,
+      y: 0,
+      scale: 1,
     },
     animate: {
       opacity: 1,
-      x: 0,
+      y: 0,
       scale: 1,
       transition: {
-        duration: 0.5,
-        ease: [0.22, 1, 0.36, 1],
+        duration: 0.3,
+        ease: "easeOut",
       },
     },
     exit: {
       opacity: 0,
-      x: -40,
-      scale: 0.98,
+      y: 0,
+      scale: 1,
       transition: {
-        duration: 0.4,
-        ease: [0.22, 1, 0.36, 1],
+        duration: 0.2,
+        ease: "easeIn",
       },
     },
   };
@@ -217,6 +220,26 @@ function AppContent() {
     }, 1500);
   };
 
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+    navigate("/");
+  };
+
+  const handleSignup = () => {
+    setIsLoggedIn(true);
+    navigate("/");
+  };
+
+  const handleLogout = () => {
+    // Önce navigasyon yap, sonra state değiştir
+    navigate("/", { replace: true });
+
+    // Navigasyon sonrası state değişimi için timeout
+    setTimeout(() => {
+      setIsLoggedIn(false);
+    }, 50);
+  };
+
   const commonChatProps = {
     chatHistories,
     selectedChatId,
@@ -234,8 +257,38 @@ function AppContent() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="sync" initial={true}>
         <Routes location={location} key={location.pathname}>
+          <Route
+            path="/login"
+            element={
+              <motion.div
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                variants={pageVariants}
+                style={{ width: "100%", height: "100vh" }}
+              >
+                <Login onLogin={handleLogin} />
+              </motion.div>
+            }
+          />
+
+          <Route
+            path="/signup"
+            element={
+              <motion.div
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                variants={pageVariants}
+                style={{ width: "100%", height: "100vh" }}
+              >
+                <Signup onSignup={handleSignup} />
+              </motion.div>
+            }
+          />
+
           <Route
             path="/"
             element={
@@ -252,6 +305,8 @@ function AppContent() {
                   onSelectChat={handleSelectChat}
                   onDeleteChat={handleDeleteChat}
                   onEditChatTitle={handleEditChatTitle}
+                  isLoggedIn={isLoggedIn}
+                  onLogout={handleLogout}
                 />
               </motion.div>
             }

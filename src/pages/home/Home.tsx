@@ -9,6 +9,8 @@ interface HomeProps {
   onSelectChat: (chatId: string) => void;
   onDeleteChat?: (chatId: string) => void;
   onEditChatTitle?: (chatId: string, newTitle: string) => void;
+  isLoggedIn: boolean;
+  onLogout: () => void;
 }
 
 const Home: React.FC<HomeProps> = ({
@@ -17,6 +19,8 @@ const Home: React.FC<HomeProps> = ({
   onSelectChat,
   onDeleteChat,
   onEditChatTitle,
+  isLoggedIn,
+  onLogout,
 }) => {
   return (
     <Box sx={{ height: "100vh" }}>
@@ -26,6 +30,8 @@ const Home: React.FC<HomeProps> = ({
         chatHistories={chatHistories}
         onDeleteChat={onDeleteChat}
         onEditChatTitle={onEditChatTitle}
+        isLoggedIn={isLoggedIn}
+        onLogout={onLogout}
       />
     </Box>
   );

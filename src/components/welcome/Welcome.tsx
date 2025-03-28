@@ -17,6 +17,7 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  Stack,
 } from "@mui/material";
 import {
   Chat as ChatIcon,
@@ -26,10 +27,13 @@ import {
   Edit as EditIcon,
   Close as CloseIcon,
   Save as SaveIcon,
+  Login as LoginIcon,
+  PersonAdd as SignupIcon,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChatHistory } from "../../types/chat";
 import { useTheme } from "@mui/material/styles";
+import { Link } from "react-router-dom";
 
 interface EditDialogProps {
   open: boolean;
@@ -93,6 +97,8 @@ interface WelcomeProps {
   chatHistories: ChatHistory[];
   onDeleteChat?: (chatId: string) => void;
   onEditChatTitle?: (chatId: string, newTitle: string) => void;
+  isLoggedIn: boolean;
+  onLogout: () => void;
 }
 
 export const Welcome: React.FC<WelcomeProps> = ({
@@ -101,6 +107,8 @@ export const Welcome: React.FC<WelcomeProps> = ({
   chatHistories,
   onDeleteChat,
   onEditChatTitle,
+  isLoggedIn,
+  onLogout,
 }) => {
   const recentChats = chatHistories.slice(-3).reverse();
   const [editingChat, setEditingChat] = useState<{
@@ -250,150 +258,264 @@ export const Welcome: React.FC<WelcomeProps> = ({
               olmak için buradayım. Hızlı ve doğru bilgiye ulaşmanızı sağlayarak
               işinizi kolaylaştırmak için tasarlandım.
             </Typography>
-            <Button
-              component={motion.button}
-              whileHover="hover"
-              whileTap="tap"
-              variants={buttonVariants}
-              variant="contained"
-              size="large"
-              startIcon={<AddIcon />}
-              onClick={onStartChat}
-              sx={{
-                px: 4,
-                py: 1.8,
-                borderRadius: 2,
-                textTransform: "none",
-                fontSize: "1.2rem",
-                fontWeight: 500,
-                backgroundColor: "primary.main",
-                "&:hover": {
-                  backgroundColor: "primary.dark",
-                },
-              }}
-            >
-              Yeni Sohbet Başlat
-            </Button>
-          </Box>
-        </Grid>
 
-        <Grid item xs={12} md={5}>
-          <Paper
-            component={motion.div}
-            variants={itemVariants}
-            elevation={0}
-            sx={{
-              p: 3,
-              backgroundColor: "background.paper",
-              borderRadius: 4,
-            }}
-          >
-            <Typography
-              component={motion.h3}
-              variant="h6"
-              variants={itemVariants}
-              sx={{
-                mb: 2,
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                color: "text.primary",
-                fontWeight: 600,
-              }}
-            >
-              <HistoryIcon /> Önceki Sohbetleriniz
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            <AnimatePresence>
-              {recentChats.length > 0 ? (
-                <List sx={{ mb: 2 }}>
-                  {recentChats.map((chat, index) => (
-                    <ListItem
-                      key={chat.id}
-                      component={motion.li}
-                      variants={chatItemVariants}
-                      initial="hidden"
-                      animate="visible"
-                      whileHover="hover"
-                      custom={index}
-                      disablePadding
+            {!isLoggedIn ? (
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={2}
+                sx={{ mb: 4 }}
+              >
+                <motion.div
+                  variants={buttonVariants}
+                  whileHover="hover"
+                  whileTap="tap"
+                >
+                  <Button
+                    component={Link}
+                    to="/login"
+                    variant="outlined"
+                    color="primary"
+                    size="large"
+                    startIcon={<LoginIcon />}
+                    sx={{
+                      py: 1.5,
+                      px: 3,
+                      borderRadius: 2,
+                      textTransform: "none",
+                      fontSize: "1rem",
+                      "&:hover": {
+                        color: "primary.main",
+                        "& .MuiButton-startIcon": {
+                          color: "primary.main",
+                        },
+                      },
+                    }}
+                  >
+                    Giriş Yap
+                  </Button>
+                </motion.div>
+
+                <motion.div
+                  variants={buttonVariants}
+                  whileHover="hover"
+                  whileTap="tap"
+                >
+                  <Button
+                    component={Link}
+                    to="/signup"
+                    variant="contained"
+                    color="primary"
+                    size="large"
+                    startIcon={<SignupIcon />}
+                    sx={{
+                      py: 1.5,
+                      px: 3,
+                      borderRadius: 2,
+                      textTransform: "none",
+                      fontSize: "1rem",
+                      "&:hover": {
+                        color: "#fff",
+                        "& .MuiButton-startIcon": {
+                          color: "#fff",
+                        },
+                      },
+                    }}
+                  >
+                    Kayıt Ol
+                  </Button>
+                </motion.div>
+              </Stack>
+            ) : (
+              <>
+                <Stack
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={2}
+                  sx={{ mb: 4 }}
+                >
+                  <motion.div
+                    variants={buttonVariants}
+                    whileHover="hover"
+                    whileTap="tap"
+                  >
+                    <Button
+                      onClick={onStartChat}
+                      variant="contained"
+                      color="primary"
+                      size="large"
+                      startIcon={<ChatIcon />}
                       sx={{
-                        position: "relative",
-                        "&:hover .chat-actions": {
-                          opacity: 1,
+                        py: 1.5,
+                        px: 3,
+                        borderRadius: 2,
+                        textTransform: "none",
+                        fontSize: "1rem",
+                        "&:hover": {
+                          color: "#fff",
+                          "& .MuiButton-startIcon": {
+                            color: "#fff",
+                          },
                         },
                       }}
                     >
-                      <ListItemButton
-                        onClick={() => onSelectChat(chat.id)}
+                      Yeni Sohbet Başlat
+                    </Button>
+                  </motion.div>
+
+                  <motion.div
+                    variants={buttonVariants}
+                    whileHover="hover"
+                    whileTap="tap"
+                  >
+                    <Button
+                      onClick={() => {
+                        onLogout();
+                      }}
+                      variant="outlined"
+                      color="primary"
+                      size="large"
+                      startIcon={<LoginIcon />}
+                      sx={{
+                        py: 1.5,
+                        px: 3,
+                        borderRadius: 2,
+                        textTransform: "none",
+                        fontSize: "1rem",
+                        "&:hover": {
+                          color: "primary.main",
+                          "& .MuiButton-startIcon": {
+                            color: "primary.main",
+                          },
+                        },
+                      }}
+                    >
+                      Çıkış Yap
+                    </Button>
+                  </motion.div>
+                </Stack>
+              </>
+            )}
+          </Box>
+        </Grid>
+
+        {isLoggedIn && (
+          <Grid item xs={12} md={5}>
+            <Paper
+              component={motion.div}
+              variants={itemVariants}
+              elevation={0}
+              sx={{
+                p: 3,
+                backgroundColor: "background.paper",
+                borderRadius: 4,
+              }}
+            >
+              <Typography
+                component={motion.h3}
+                variant="h6"
+                variants={itemVariants}
+                sx={{
+                  mb: 2,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  color: "text.primary",
+                  fontWeight: 600,
+                }}
+              >
+                <HistoryIcon /> Önceki Sohbetleriniz
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
+              <AnimatePresence>
+                {recentChats.length > 0 ? (
+                  <List sx={{ mb: 2 }}>
+                    {recentChats.map((chat, index) => (
+                      <ListItem
+                        key={chat.id}
+                        component={motion.li}
+                        variants={chatItemVariants}
+                        initial="hidden"
+                        animate="visible"
+                        whileHover="hover"
+                        custom={index}
+                        disablePadding
                         sx={{
-                          borderRadius: 2,
-                          mb: 1,
-                          pr: 8,
+                          position: "relative",
+                          "&:hover .chat-actions": {
+                            opacity: 1,
+                          },
                         }}
                       >
-                        <ListItemIcon>
-                          <ChatIcon color="action" />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={chat.title}
-                          secondary={new Date(
-                            chat.updatedAt
-                          ).toLocaleDateString()}
-                          primaryTypographyProps={{
-                            fontWeight: 500,
-                          }}
-                        />
-                        <Box
-                          className="chat-actions"
+                        <ListItemButton
+                          onClick={() => onSelectChat(chat.id)}
                           sx={{
-                            position: "absolute",
-                            right: 8,
-                            opacity: 0,
-                            transition: "opacity 0.2s",
-                            display: "flex",
-                            gap: 0.5,
+                            borderRadius: 2,
+                            mb: 1,
+                            pr: 8,
                           }}
                         >
-                          <IconButton
-                            size="small"
-                            onClick={(e) => handleEdit(e, chat)}
+                          <ListItemIcon>
+                            <ChatIcon color="action" />
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={chat.title}
+                            secondary={new Date(
+                              chat.updatedAt
+                            ).toLocaleDateString()}
+                            primaryTypographyProps={{
+                              fontWeight: 500,
+                            }}
+                          />
+                          <Box
+                            className="chat-actions"
                             sx={{
-                              color: "text.secondary",
-                              "&:hover": { color: "primary.main" },
+                              position: "absolute",
+                              right: 8,
+                              opacity: 0,
+                              transition: "opacity 0.2s",
+                              display: "flex",
+                              gap: 0.5,
                             }}
                           >
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={(e) => handleDelete(e, chat.id)}
-                            sx={{
-                              color: "text.secondary",
-                              "&:hover": { color: "error.main" },
-                            }}
-                          >
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </Box>
-                      </ListItemButton>
-                    </ListItem>
-                  ))}
-                </List>
-              ) : (
-                <Typography
-                  component={motion.p}
-                  variant="body2"
-                  color="text.secondary"
-                  variants={itemVariants}
-                  sx={{ textAlign: "center", py: 4 }}
-                >
-                  Henüz sohbet geçmişiniz bulunmuyor
-                </Typography>
-              )}
-            </AnimatePresence>
-          </Paper>
-        </Grid>
+                            <IconButton
+                              size="small"
+                              onClick={(e) => handleEdit(e, chat)}
+                              sx={{
+                                color: "text.secondary",
+                                "&:hover": { color: "primary.main" },
+                              }}
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={(e) => handleDelete(e, chat.id)}
+                              sx={{
+                                color: "text.secondary",
+                                "&:hover": { color: "error.main" },
+                              }}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        </ListItemButton>
+                      </ListItem>
+                    ))}
+                  </List>
+                ) : (
+                  <Typography
+                    component={motion.p}
+                    variant="body2"
+                    color="text.secondary"
+                    variants={itemVariants}
+                    sx={{ textAlign: "center", py: 4 }}
+                  >
+                    Henüz sohbet geçmişiniz bulunmuyor
+                  </Typography>
+                )}
+              </AnimatePresence>
+            </Paper>
+          </Grid>
+        )}
       </Grid>
       {editingChat && (
         <EditDialog
