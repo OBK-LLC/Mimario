@@ -1,50 +1,158 @@
-# React + TypeScript + Vite
+# Mimario - Mimarlar için Akıllı Asistan
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 📋 İçindekiler
 
-Currently, two official plugins are available:
+- [Proje Hakkında](#proje-hakkında)
+- [Özellikler](#özellikler)
+- [Teknoloji Yığını](#teknoloji-yığını)
+- [Kurulum](#kurulum)
+- [Kullanım](#kullanım)
+- [Mimari Yapı](#mimari-yapı)
+- [Katkıda Bulunma](#katkıda-bulunma)
+- [İletişim](#iletişim)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🏛️ Proje Hakkında
 
-## Expanding the ESLint configuration
+**Mimario**, mimarların yönetmelikler ve temel dokümanları yükleyip sorular sorabilecekleri, yapay zeka destekli bir asistan platformudur. Mimari projelerin planlama, tasarım ve onay süreçlerinde karşılaşılan karmaşık yönetmelik ve standartları hızla yorumlayıp cevaplamak için geliştirilmiştir.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+Gelişmiş yapay zeka alt yapısı ve kullanıcı dostu arayüzü ile Mimario, mimarların yönetmeliklerle ilgili sorularını anında cevaplayarak tasarım sürecini hızlandırır, uyumluluk sorunlarını en aza indirir ve zaman tasarrufu sağlar.
 
-- Configure the top-level `parserOptions` property like this:
+## ✨ Özellikler
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+- **Akıllı Dokümantasyon Araması**: Yüklenen yönetmelikler ve teknik dokümanlar içinde semantik arama yaparak en doğru bilgiyi bulur.
+
+- **Sohbet Tabanlı Arayüz**: Mimari terminolojiye özel eğitilmiş chat modeli ile doğal dilde sorulara yanıt verir.
+
+- **Doküman Yönetimi**: Yönetmelikler, teknik şartnameler ve standartları kategorilere ayırarak organize eder.
+
+- **Kişiselleştirilmiş Deneyim**: Kullanıcıların sık sorduğu sorular ve ilgilendikleri alanlara göre öneri sistemi sunar.
+
+- **Çoklu Dil Desteği**: Türkçe ve İngilizce dillerinde yönetmelik sorgulaması yapabilme.
+
+- **Mobil Uyumluluk**: Şantiye ortamında veya hareket halindeyken bile kullanılabilir.
+
+- **Erişilebilirlik**: WCAG standartlarına uygun, herkes için erişilebilir arayüz.
+
+## 🛠️ Tech-Stack
+
+### Frontend (Mevcut)
+
+- **React**: Kullanıcı arayüzü geliştirme
+- **TypeScript**: Tip güvenli kod geliştirme
+- **Material UI**: Modern ve duyarlı tasarım bileşenleri
+- **React Router**: Sayfa yönlendirmeleri
+- **React Hook Form**: Form yönetimi ve doğrulama
+- **Framer Motion**: Animasyonlar ve geçişler
+- **Vite**: Hızlı geliştirme ortamı
+
+### Backend (Planlanan)
+
+- **Firebase**: Kimlik doğrulama, veritabanı ve depolama için başlangıç çözümü
+- **LangChain**: Büyük Dil Modelleri (LLM) ile uygulama geliştirme
+- **LangGraph**: Karmaşık sorgular için akış kontrolü
+- **LangSmith**: LLM uygulamaları için izleme ve iyileştirme
+- **Node.js**: Sunucu tarafı geliştirme
+
+## 🚀 Kurulum
+
+### Gereksinimler
+
+- Node.js (v18.0.0 veya üzeri)
+- npm veya yarn
+
+### Adımlar
+
+1. Repo'yu klonlayın
+
+```bash
+git clone https://github.com/OBK-LLC/Mimario.git
+cd Mimario
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+2. Bağımlılıkları yükleyin
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+```bash
+npm install
+# veya
+yarn install
 ```
+
+3. Geliştirme sunucusunu başlatın
+
+```bash
+npm run dev
+# veya
+yarn dev
+```
+
+4. Tarayıcınızda açın
+
+```
+http://localhost:5173
+```
+
+## 📝 Kullanım
+
+### Hesap Oluşturma
+
+- "Kayıt Ol" butonuna tıklayarak yeni bir hesap oluşturun
+- E-posta ve şifre bilgilerinizi girin veya Google hesabınızla hızlıca kayıt olun
+
+### Soru Sorma
+
+- Chat arayüzünden mimari yönetmeliklerle ilgili sorularınızı sorun
+- Örnek: "Yangın merdiveni genişliği için minimum ölçüler nelerdir?"
+
+### Sonuçları Kaydetme
+
+- Aldığınız yanıtları kaydedin ve projenizde referans olarak kullanın
+- Görüşmelerinize daha sonra erişmek için sohbet geçmişini kaydedebilirsiniz
+
+## 🏗️ Mimari Yapı
+
+Proje, modern bir React uygulaması olarak yapılandırılmıştır:
+
+```
+mimario/
+├── public/             # Statik dosyalar
+├── src/                # Kaynak kodlar
+│   ├── assets/         # Resimler, fontlar vb.
+│   ├── components/     # Tekrar kullanılabilir bileşenler
+│   ├── pages/          # Sayfa bileşenleri
+│   │   ├── home/       # Ana sayfa
+│   │   ├── chat/       # Sohbet arayüzü
+│   │   ├── login/      # Giriş sayfası
+│   │   ├── signup/     # Kayıt sayfası
+│   │   └── ...
+│   ├── theme/          # Tema ve stil konfigürasyonu
+│   ├── types/          # TypeScript tip tanımlamaları
+│   ├── App.tsx         # Ana uygulama bileşeni
+│   └── main.tsx        # Uygulama giriş noktası
+└── ...
+```
+
+## 👥 Katkıda Bulunma
+
+Mimario'ya katkıda bulunmak istiyorsanız:
+
+1. Bu repo'yu fork edin
+2. Yeni bir branch oluşturun (`git checkout -b feature/amazing-feature`)
+3. Değişikliklerinizi commit edin (`git commit -m 'Add some amazing feature'`)
+4. Branch'inize push edin (`git push origin feature/amazing-feature`)
+5. Pull Request açın
+
+### Katkı Kuralları
+
+- Kod standardı olarak ESLint kurallarına uyun
+- Yeni özellikler için test yazın
+- Dokümentasyonu güncel tutun
+
+## 📞 İletişim
+
+OBK LLC - info@tradewizz.co
+
+Proje Linki: [https://github.com/OBK-LLC/Mimario](https://github.com/OBK-LLC/Mimario)
+
+---
+
+⭐️ **Mimario - Mimarların dijital asistanı** ⭐️
