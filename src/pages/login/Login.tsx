@@ -7,9 +7,10 @@ import {
   InputAdornment,
   IconButton,
   Link as MuiLink,
+  Divider,
 } from "@mui/material";
 import { Link } from "react-router-dom";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { Visibility, VisibilityOff, Google } from "@mui/icons-material";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -46,6 +47,12 @@ const Login = ({ onLogin }: LoginProps) => {
     // TODO: Implement actual login logic
     console.log("Login form submitted:", data);
     onLogin();
+  };
+
+  const handleGoogleLogin = () => {
+    // TODO: Google OAuth URL'sine yönlendir
+    // window.location.href = "GOOGLE_AUTH_URL_BURAYA_EKLENECEK";
+    console.log("Google login initiated");
   };
 
   return (
@@ -131,6 +138,26 @@ const Login = ({ onLogin }: LoginProps) => {
             </Button>
           </div>
         </form>
+
+        <div className={styles.dividerContainer}>
+          <Divider className={styles.divider}>
+            <Typography variant="body2" color="textSecondary">
+              veya
+            </Typography>
+          </Divider>
+        </div>
+
+        <div className={styles.socialLogin}>
+          <Button
+            variant="outlined"
+            fullWidth
+            startIcon={<Google />}
+            onClick={handleGoogleLogin}
+            className={styles.googleButton}
+          >
+            Google ile giriş yap
+          </Button>
+        </div>
 
         <div className={styles.footer}>
           <Typography variant="body2">
