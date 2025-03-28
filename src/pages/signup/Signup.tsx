@@ -10,9 +10,10 @@ import {
   IconButton,
   Link as MuiLink,
   FormHelperText,
+  Divider,
 } from "@mui/material";
 import { Link } from "react-router-dom";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { Visibility, VisibilityOff, Google } from "@mui/icons-material";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -70,6 +71,15 @@ const Signup = ({ onSignup }: SignupProps) => {
     onSignup();
   };
 
+  const handleGoogleSignup = () => {
+    // TODO: Implement actual Google signup logic
+    console.log("Google signup initiated");
+    // When integrated with a real backend:
+    // 1. Redirect to Google auth URL or use a library like firebase auth
+    // 2. Handle the authentication response
+    // 3. Call onSignup() after successful authentication
+  };
+
   return (
     <Box className={styles.container}>
       <Box className={styles.formContainer}>
@@ -92,6 +102,7 @@ const Signup = ({ onSignup }: SignupProps) => {
                   <TextField
                     {...field}
                     fullWidth
+                    size="small"
                     label="Ad"
                     error={!!errors.firstName}
                     helperText={errors.firstName?.message}
@@ -109,6 +120,7 @@ const Signup = ({ onSignup }: SignupProps) => {
                   <TextField
                     {...field}
                     fullWidth
+                    size="small"
                     label="Soyad"
                     error={!!errors.lastName}
                     helperText={errors.lastName?.message}
@@ -127,6 +139,7 @@ const Signup = ({ onSignup }: SignupProps) => {
                 <TextField
                   {...field}
                   fullWidth
+                  size="small"
                   label="E-posta Adresi"
                   type="email"
                   error={!!errors.email}
@@ -145,6 +158,7 @@ const Signup = ({ onSignup }: SignupProps) => {
                 <TextField
                   {...field}
                   fullWidth
+                  size="small"
                   label="Şifre"
                   type={showPassword ? "text" : "password"}
                   error={!!errors.password}
@@ -156,6 +170,7 @@ const Signup = ({ onSignup }: SignupProps) => {
                         <IconButton
                           onClick={() => setShowPassword(!showPassword)}
                           edge="end"
+                          size="small"
                         >
                           {showPassword ? <VisibilityOff /> : <Visibility />}
                         </IconButton>
@@ -165,22 +180,6 @@ const Signup = ({ onSignup }: SignupProps) => {
                 />
               )}
             />
-            {password && (
-              <div className={styles.passwordStrength}>
-                <PasswordStrengthBar
-                  password={password}
-                  scoreWords={[
-                    "Çok Zayıf",
-                    "Zayıf",
-                    "Orta",
-                    "Güçlü",
-                    "Çok Güçlü",
-                  ]}
-                  minLength={6}
-                  shortScoreWord="Çok Kısa"
-                />
-              </div>
-            )}
           </div>
 
           <div className={styles.formField}>
@@ -191,6 +190,7 @@ const Signup = ({ onSignup }: SignupProps) => {
                 <TextField
                   {...field}
                   fullWidth
+                  size="small"
                   label="Şifreyi Tekrar Girin"
                   type={showConfirmPassword ? "text" : "password"}
                   error={!!errors.confirmPassword}
@@ -204,6 +204,7 @@ const Signup = ({ onSignup }: SignupProps) => {
                             setShowConfirmPassword(!showConfirmPassword)
                           }
                           edge="end"
+                          size="small"
                         >
                           {showConfirmPassword ? (
                             <VisibilityOff />
@@ -218,6 +219,23 @@ const Signup = ({ onSignup }: SignupProps) => {
               )}
             />
           </div>
+
+          {password && (
+            <div className={styles.passwordStrength}>
+              <PasswordStrengthBar
+                password={password}
+                scoreWords={[
+                  "Çok Zayıf",
+                  "Zayıf",
+                  "Orta",
+                  "Güçlü",
+                  "Çok Güçlü",
+                ]}
+                minLength={6}
+                shortScoreWord="Çok Kısa"
+              />
+            </div>
+          )}
 
           <div className={styles.termsContainer}>
             <Controller
@@ -274,6 +292,26 @@ const Signup = ({ onSignup }: SignupProps) => {
             </Button>
           </div>
         </form>
+
+        <div className={styles.dividerContainer}>
+          <Divider className={styles.divider}>
+            <Typography variant="body2" color="textSecondary">
+              veya
+            </Typography>
+          </Divider>
+        </div>
+
+        <div className={styles.socialLogin}>
+          <Button
+            variant="outlined"
+            fullWidth
+            startIcon={<Google />}
+            onClick={handleGoogleSignup}
+            className={styles.googleButton}
+          >
+            Google ile kayıt ol
+          </Button>
+        </div>
 
         <div className={styles.footer}>
           <Typography variant="body2">
