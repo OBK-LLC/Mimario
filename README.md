@@ -4,7 +4,7 @@
 
 - [Proje Hakkında](#proje-hakkında)
 - [Özellikler](#özellikler)
-- [Teknoloji Yığını](#teknoloji-yığını)
+- [Tech-Stack](#tech-stack)
 - [Kurulum](#kurulum)
 - [Kullanım](#kullanım)
 - [Mimari Yapı](#mimari-yapı)
