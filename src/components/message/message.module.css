@@ -1,20 +1,37 @@
 .messageContainer {
-  display: flex;
-  margin-bottom: 16px; /* mb: 2 */
-}
-
-.aiMessage {
-  justify-content: flex-start;
-}
-
-.userMessage {
-  justify-content: flex-end;
+  margin-bottom: 16px;
+  position: relative;
 }
 
 .messageBubble {
-  padding: 16px; /* p: 2 */
-  max-width: 70%;
-  border-radius: 16px; /* borderRadius: 2 */
+  padding: 16px;
+  max-width: 80%;
+  border-radius: 12px;
+  position: relative;
+}
+
+.messageText {
+  margin-bottom: 8px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.timestamp {
+  display: block;
+  font-size: 0.75rem;
+  margin-top: 8px;
+}
+
+.aiMessage {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.userMessage {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
 }
 
 .aiMessageBubble {
@@ -25,20 +42,31 @@
   border-top-right-radius: 0;
 }
 
-.messageText {
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.timestamp {
-  display: block;
-  margin-top: 4px; /* mt: 0.5 */
-}
-
 .aiTimestamp {
   text-align: left;
 }
 
 .userTimestamp {
   text-align: right;
+}
+
+.messageActions {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  margin-top: 4px;
+  padding-left: 8px;
+}
+
+.actionButton {
+  padding: 4px;
+  border-radius: 50%;
+  background-color: transparent;
+  transition: all 0.2s ease;
+  color: rgba(0, 0, 0, 0.54);
+}
+
+.actionButton:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+  color: rgba(0, 0, 0, 0.87);
 }

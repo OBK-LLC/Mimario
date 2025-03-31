@@ -184,7 +184,7 @@ const Chat: React.FC<ChatPageProps> = ({
         sx={{
           flex: 1,
           overflow: "hidden",
-          paddingTop: isMobile ? 7 : 0,
+          paddingTop: { xs: "80px", md: "80px" },
         }}
       >
         <ChatContainer

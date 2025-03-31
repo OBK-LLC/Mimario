@@ -1,0 +1,25 @@
+.dialogTitle {
+  padding-bottom: 8px;
+}
+
+.titleContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.contentBox {
+  padding: 16px 0;
+}
+
+.rating {
+  margin: 8px 0;
+}
+
+.textField {
+  margin-top: 16px;
+}
+
+.actions {
+  padding: 0 24px 16px;
+}
