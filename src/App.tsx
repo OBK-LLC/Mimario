@@ -18,6 +18,7 @@ import Chat from "./pages/chat/Chat";
 import Login from "./pages/login/Login";
 import Signup from "./pages/signup/Signup";
 import ForgotPassword from "./pages/forgot-password/ForgotPassword";
+import Profile from "./pages/profile/Profile";
 
 const STORAGE_KEY = "mimario-chat-histories";
 const THEME_MODE_KEY = "mimario-theme-mode";
@@ -253,6 +254,7 @@ function AppContent() {
     onToggleTheme: toggleColorMode,
     isDarkMode: mode === "dark",
     onSendMessage: handleSendMessage,
+    onLogout: handleLogout,
   };
 
   return (
@@ -260,51 +262,6 @@ function AppContent() {
       <CssBaseline />
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
-          <Route
-            path="/login"
-            element={
-              <motion.div
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                variants={pageVariants}
-                style={{ width: "100%", height: "100vh" }}
-              >
-                <Login onLogin={handleLogin} />
-              </motion.div>
-            }
-          />
-
-          <Route
-            path="/signup"
-            element={
-              <motion.div
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                variants={pageVariants}
-                style={{ width: "100%", height: "100vh" }}
-              >
-                <Signup onSignup={handleSignup} />
-              </motion.div>
-            }
-          />
-
-          <Route
-            path="/forgot-password"
-            element={
-              <motion.div
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                variants={pageVariants}
-                style={{ width: "100%", height: "100vh" }}
-              >
-                <ForgotPassword onResetRequest={handlePasswordReset} />
-              </motion.div>
-            }
-          />
-
           <Route
             path="/"
             element={
@@ -323,24 +280,108 @@ function AppContent() {
                   onEditChatTitle={handleEditChatTitle}
                   isLoggedIn={isLoggedIn}
                   onLogout={handleLogout}
+                  mode={mode}
+                  toggleColorMode={toggleColorMode}
                 />
               </motion.div>
             }
           />
+
           <Route
             path="/chat/:chatId"
             element={
-              <motion.div
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                variants={pageVariants}
-                style={{ width: "100%", height: "100vh" }}
-              >
-                <ChatWrapper {...commonChatProps} />
-              </motion.div>
+              isLoggedIn ? (
+                <motion.div
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  variants={pageVariants}
+                  style={{ width: "100%", height: "100vh" }}
+                >
+                  <ChatWrapper {...commonChatProps} />
+                </motion.div>
+              ) : (
+                <Navigate to="/login" replace />
+              )
             }
           />
+
+          <Route
+            path="/profile"
+            element={
+              isLoggedIn ? (
+                <motion.div
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  variants={pageVariants}
+                  style={{ width: "100%", height: "100vh" }}
+                >
+                  <Profile />
+                </motion.div>
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+
+          <Route
+            path="/login"
+            element={
+              !isLoggedIn ? (
+                <motion.div
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  variants={pageVariants}
+                  style={{ width: "100%", height: "100vh" }}
+                >
+                  <Login onLogin={handleLogin} />
+                </motion.div>
+              ) : (
+                <Navigate to="/" replace />
+              )
+            }
+          />
+
+          <Route
+            path="/signup"
+            element={
+              !isLoggedIn ? (
+                <motion.div
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  variants={pageVariants}
+                  style={{ width: "100%", height: "100vh" }}
+                >
+                  <Signup onSignup={handleSignup} />
+                </motion.div>
+              ) : (
+                <Navigate to="/" replace />
+              )
+            }
+          />
+
+          <Route
+            path="/forgot-password"
+            element={
+              !isLoggedIn ? (
+                <motion.div
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  variants={pageVariants}
+                  style={{ width: "100%", height: "100vh" }}
+                >
+                  <ForgotPassword onResetRequest={handlePasswordReset} />
+                </motion.div>
+              ) : (
+                <Navigate to="/" replace />
+              )
+            }
+          />
+
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AnimatePresence>

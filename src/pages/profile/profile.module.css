@@ -1,0 +1,203 @@
+.container {
+  min-height: 100vh;
+  height: 100vh;
+  background-color: var(--background-default);
+  padding: 24px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.profileContainer {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 24px;
+}
+
+.sidebar {
+  background-color: var(--background-paper);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
+  height: 520px;
+  display: flex;
+  flex-direction: column;
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.header {
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.avatarContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 24px;
+}
+
+.avatar {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 16px;
+  border: 4px solid var(--background-paper);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease;
+}
+
+.avatar:hover {
+  transform: scale(1.02);
+}
+
+.uploadButton {
+  width: 100%;
+  height: 44px !important;
+  border-color: var(--divider) !important;
+  color: var(--text-primary) !important;
+}
+
+.uploadButton:hover {
+  border-color: var(--text-primary) !important;
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+.section {
+  background-color: var(--background-paper);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
+  height: 520px;
+}
+
+.sectionTitle {
+  font-size: 1.5rem !important;
+  font-weight: 600 !important;
+  color: var(--text-primary);
+  margin-bottom: 24px !important;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--divider);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.formField {
+  margin-bottom: 16px;
+}
+
+.button {
+  height: 44px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  margin-top: 8px !important;
+}
+
+.errorMessage {
+  color: var(--error-main);
+  font-size: 0.875rem;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background-color: var(--error-light);
+  border-radius: 8px;
+  border: 1px solid var(--error-main);
+}
+
+.successMessage {
+  color: var(--success-main);
+  font-size: 0.875rem;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background-color: var(--success-light);
+  border-radius: 8px;
+  border: 1px solid var(--success-main);
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.sidebarFooter {
+  margin-top: auto;
+  padding-top: 24px;
+}
+
+.backButton {
+  background-color: black !important;
+  color: white !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  height: 44px !important;
+}
+
+.backButton:hover {
+  background-color: #333 !important;
+}
+
+@media (max-width: 1024px) {
+  .profileContainer {
+    grid-template-columns: 1fr;
+  }
+
+  .avatar {
+    width: 140px;
+    height: 140px;
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 16px;
+  }
+
+  .section {
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 1.75rem;
+  }
+
+  .avatar {
+    width: 120px;
+    height: 120px;
+  }
+
+  .button {
+    height: 40px !important;
+  }
+}

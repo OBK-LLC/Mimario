@@ -5,8 +5,14 @@ import {
   useTheme,
   Drawer,
   IconButton,
+  Button,
 } from "@mui/material";
-import { Menu as MenuIcon } from "@mui/icons-material";
+import {
+  Menu as MenuIcon,
+  Person as ProfileIcon,
+  Logout as LogoutIcon,
+} from "@mui/icons-material";
+import { Link, useNavigate } from "react-router-dom";
 import Sidebar from "../../components/sidebar/Sidebar";
 import ChatContainer from "../../components/chat-container/ChatContainer";
 import { ChatHistory, Message } from "../../types/chat";
@@ -23,6 +29,7 @@ interface ChatPageProps {
   onToggleTheme?: () => void;
   isDarkMode?: boolean;
   onSendMessage: (message: string) => void;
+  onLogout: () => void;
 }
 
 const Chat: React.FC<ChatPageProps> = ({
@@ -37,8 +44,10 @@ const Chat: React.FC<ChatPageProps> = ({
   onToggleTheme,
   isDarkMode,
   onSendMessage,
+  onLogout,
 }) => {
   const theme = useTheme();
+  const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -46,8 +55,65 @@ const Chat: React.FC<ChatPageProps> = ({
     setMobileOpen(!mobileOpen);
   };
 
+  const handleLogout = () => {
+    onLogout();
+    navigate("/");
+  };
+
   return (
     <Box sx={{ display: "flex", height: "100vh" }}>
+      <Box
+        sx={{
+          position: "absolute",
+          top: 16,
+          right: 16,
+          display: "flex",
+          gap: 2,
+          zIndex: 1100,
+        }}
+      >
+        <Button
+          component={Link}
+          to="/profile"
+          variant="outlined"
+          startIcon={<ProfileIcon />}
+          sx={{
+            textTransform: "none",
+            "&:hover": {
+              transform: "scale(1.05)",
+              backgroundColor: "rgba(0, 0, 0, 0.04)",
+              color: "inherit !important",
+              borderColor: "rgba(0, 0, 0, 0.23) !important",
+              "& .MuiButton-startIcon": {
+                color: "inherit !important",
+              },
+            },
+          }}
+        >
+          Profil
+        </Button>
+        <Button
+          onClick={handleLogout}
+          variant="outlined"
+          color="error"
+          startIcon={<LogoutIcon />}
+          sx={{
+            textTransform: "none",
+            "&:hover": {
+              transform: "scale(1.05)",
+              backgroundColor: "rgba(0, 0, 0, 0.04)",
+              color: "error.main !important",
+              borderColor: (theme) => `${theme.palette.error.main} !important`,
+              "& .MuiButton-startIcon": {
+                color: "error.main !important",
+              },
+            },
+          }}
+        >
+          Çıkış Yap
+        </Button>
+      </Box>
+
       {isMobile ? (
         <>
           <IconButton
