@@ -29,6 +29,8 @@ import {
   Save as SaveIcon,
   Login as LoginIcon,
   PersonAdd as SignupIcon,
+  Person as ProfileIcon,
+  Logout as LogoutIcon,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChatHistory } from "../../types/chat";
@@ -204,8 +206,43 @@ export const Welcome: React.FC<WelcomeProps> = ({
         justifyContent: "center",
         backgroundColor: "background.default",
         p: { xs: 2, md: 3 },
+        position: "relative",
       }}
     >
+      {isLoggedIn && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 16,
+            right: { xs: 16, md: "calc((100% - 1225px) / 2 + 16px)" },
+          }}
+        >
+          <motion.div
+            variants={buttonVariants}
+            whileHover="hover"
+            whileTap="tap"
+          >
+            <Button
+              component={Link}
+              to="/profile"
+              variant="outlined"
+              startIcon={<ProfileIcon />}
+              sx={{
+                textTransform: "none",
+                "&:hover": {
+                  bgcolor: "rgba(0, 0, 0, 0.04)",
+                  borderColor: (theme) =>
+                    `${theme.palette.primary.main} !important`,
+                  color: (theme) => `${theme.palette.primary.main} !important`,
+                },
+              }}
+            >
+              Profil
+            </Button>
+          </motion.div>
+        </Box>
+      )}
+
       <Grid container spacing={4} maxWidth="1200px" margin="auto">
         <Grid item xs={12} md={7}>
           <Box sx={{ mb: 6 }}>

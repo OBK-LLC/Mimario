@@ -11,6 +11,8 @@ interface HomeProps {
   onEditChatTitle?: (chatId: string, newTitle: string) => void;
   isLoggedIn: boolean;
   onLogout: () => void;
+  mode: "light" | "dark";
+  toggleColorMode: () => void;
 }
 
 const Home: React.FC<HomeProps> = ({
@@ -21,6 +23,8 @@ const Home: React.FC<HomeProps> = ({
   onEditChatTitle,
   isLoggedIn,
   onLogout,
+  mode,
+  toggleColorMode,
 }) => {
   return (
     <Box sx={{ height: "100vh" }}>
