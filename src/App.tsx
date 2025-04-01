@@ -19,6 +19,7 @@ import Login from "./pages/login/Login";
 import Signup from "./pages/signup/Signup";
 import ForgotPassword from "./pages/forgot-password/ForgotPassword";
 import Profile from "./pages/profile/Profile";
+import Admin from "./pages/admin/Admin";
 
 const STORAGE_KEY = "mimario-chat-histories";
 const THEME_MODE_KEY = "mimario-theme-mode";
@@ -381,6 +382,8 @@ function AppContent() {
               )
             }
           />
+
+          <Route path="/admin" element={<Admin />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
