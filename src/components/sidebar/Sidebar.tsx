@@ -214,30 +214,22 @@ export const Sidebar: React.FC<ExtendedSidebarProps> = ({
         )}
       </List>
       {onToggleTheme && (
-        <>
-          <Divider />
-          <Box
-            className={styles.footer}
-            sx={{
-              borderColor: "divider",
-            }}
+        <Box className={styles.footer}>
+          <Typography variant="body2" color="text.secondary">
+            Tema
+          </Typography>
+          <IconButton
+            onClick={onToggleTheme}
+            className={styles.themeToggle}
+            size="small"
           >
-            <Typography variant="body2" color="text.secondary">
-              Tema
-            </Typography>
-            <IconButton
-              onClick={onToggleTheme}
-              className={styles.themeToggle}
-              size="small"
-            >
-              {isDarkMode ? (
-                <Brightness7 fontSize="small" />
-              ) : (
-                <Brightness4 fontSize="small" />
-              )}
-            </IconButton>
-          </Box>
-        </>
+            {isDarkMode ? (
+              <Brightness7 fontSize="small" />
+            ) : (
+              <Brightness4 fontSize="small" />
+            )}
+          </IconButton>
+        </Box>
       )}
       <EditDialog
         open={!!editingChat}

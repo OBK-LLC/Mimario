@@ -167,8 +167,13 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
       <Box
         className={styles.inputContainer}
         sx={{
-          borderColor: "divider",
           backgroundColor: "background.paper",
+          borderTop: "1px solid",
+          borderColor: "divider",
+          height: 80,
+          display: "flex",
+          alignItems: "center",
+          padding: "0 24px",
         }}
       >
         <ChatInput onSendMessage={onSendMessage} disabled={isGenerating} />
