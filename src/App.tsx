@@ -26,8 +26,11 @@ import Verification from "./pages/verification/Verification";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const STORAGE_KEY = "mimario-chat-histories";
 const THEME_MODE_KEY = "mimario-theme-mode";
+
+function getStorageKey(userId: string) {
+  return `mimario-chat-histories-${userId}`;
+}
 
 function ChatWrapper(props: any) {
   const { chatId } = useParams();
@@ -87,7 +90,9 @@ function AppContent() {
   };
 
   const initialChatHistories = () => {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!user?.id) return [];
+
+    const saved = localStorage.getItem(getStorageKey(user.id));
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -108,15 +113,31 @@ function AppContent() {
     return [];
   };
 
-  const [chatHistories, setChatHistories] =
-    useState<ChatHistory[]>(initialChatHistories);
+  const [chatHistories, setChatHistories] = useState<ChatHistory[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string>();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
 
+  // Initialize chat histories when user changes
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistories));
-  }, [chatHistories]);
+    if (user?.id) {
+      setChatHistories(initialChatHistories());
+    } else {
+      setChatHistories([]);
+      setSelectedChatId(undefined);
+      setMessages([]);
+    }
+  }, [user?.id]);
+
+  // Save chat histories when they change
+  useEffect(() => {
+    if (user?.id) {
+      localStorage.setItem(
+        getStorageKey(user.id),
+        JSON.stringify(chatHistories)
+      );
+    }
+  }, [chatHistories, user?.id]);
 
   const handleNewChat = () => {
     const newChatId = uuidv4();
