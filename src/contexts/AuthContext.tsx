@@ -21,10 +21,7 @@ interface AuthContextType {
   register: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
-  changePassword: (
-    currentPassword: string,
-    newPassword: string
-  ) => Promise<void>;
+  changePassword: (password: string) => Promise<void>;
   googleSignIn: () => Promise<void>;
 }
 
@@ -130,18 +127,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const changePassword = async (
-    currentPassword: string,
-    newPassword: string
-  ) => {
+  const changePassword = async (password: string) => {
     try {
-      await authService.changePassword(currentPassword, newPassword);
+      await authService.changePassword(password);
       showToast.success("Şifreniz başarıyla değiştirildi.");
     } catch (error) {
       console.error("Change password error:", error);
-      showToast.error(
-        "Şifre değiştirilemedi. Lütfen mevcut şifrenizi kontrol edin."
-      );
+      showToast.error("Şifre değiştirilemedi.");
       throw error;
     }
   };

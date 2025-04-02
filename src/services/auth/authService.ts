@@ -83,10 +83,7 @@ export const authService = {
     }
   },
 
-  async changePassword(
-    currentPassword: string,
-    newPassword: string
-  ): Promise<void> {
+  async changePassword(password: string): Promise<void> {
     try {
       const response = await fetch(`${API_URL}/api/auth/change-password`, {
         method: "PUT",
@@ -95,8 +92,7 @@ export const authService = {
           Authorization: `Bearer ${tokenStorage.getTokens()?.token}`,
         },
         body: JSON.stringify({
-          currentPassword,
-          newPassword,
+          password,
         }),
       });
 

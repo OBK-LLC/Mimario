@@ -24,7 +24,6 @@ interface ProfileData {
 }
 
 interface PasswordData {
-  currentPassword: string;
   newPassword: string;
   confirmPassword: string;
 }
@@ -39,12 +38,10 @@ const Profile: React.FC = () => {
   });
 
   const [passwordData, setPasswordData] = useState<PasswordData>({
-    currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
 
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [avatar, setAvatar] = useState<string>("/default-avatar.png");
@@ -109,19 +106,15 @@ const Profile: React.FC = () => {
     }
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      showToast.error("Yeni şifreler eşleşmiyor.");
+      showToast.error("Şifreler eşleşmiyor.");
       return;
     }
 
     try {
-      await changePassword(
-        passwordData.currentPassword,
-        passwordData.newPassword
-      );
+      await changePassword(passwordData.newPassword);
 
       // Başarılı olduğunda formu temizle
       setPasswordData({
-        currentPassword: "",
         newPassword: "",
         confirmPassword: "",
       });
@@ -234,35 +227,6 @@ const Profile: React.FC = () => {
               <div className={styles.formField}>
                 <TextField
                   fullWidth
-                  label="Mevcut Şifre"
-                  name="currentPassword"
-                  type={showCurrentPassword ? "text" : "password"}
-                  value={passwordData.currentPassword}
-                  onChange={handlePasswordChange}
-                  variant="outlined"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() =>
-                            setShowCurrentPassword(!showCurrentPassword)
-                          }
-                          edge="end"
-                        >
-                          {showCurrentPassword ? (
-                            <VisibilityOff />
-                          ) : (
-                            <Visibility />
-                          )}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </div>
-              <div className={styles.formField}>
-                <TextField
-                  fullWidth
                   label="Yeni Şifre"
                   name="newPassword"
                   type={showNewPassword ? "text" : "password"}
@@ -317,18 +281,10 @@ const Profile: React.FC = () => {
                 variant="contained"
                 color="primary"
                 fullWidth
-                className={styles.button}
+                className={styles.submitButton}
               >
                 Şifreyi Değiştir
               </Button>
-              <Collapse in={!!passwordMessage}>
-                <Alert
-                  severity={passwordMessage?.type || "info"}
-                  sx={{ mt: 2 }}
-                >
-                  {passwordMessage?.text}
-                </Alert>
-              </Collapse>
             </form>
           </Paper>
         </Box>
