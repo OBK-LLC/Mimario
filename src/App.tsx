@@ -13,6 +13,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { getTheme } from "./theme/theme";
 import { Message, ChatHistory } from "./types/chat";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Home from "./pages/home/Home";
 import Chat from "./pages/chat/Chat";
 import Login from "./pages/login/Login";
@@ -40,12 +41,12 @@ function ChatWrapper(props: any) {
 function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, loading, logout } = useAuth();
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
   const [mode, setMode] = useState<"light" | "dark">(
     (localStorage.getItem(THEME_MODE_KEY) as "light" | "dark") ||
       (prefersDarkMode ? "dark" : "light")
   );
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
   const theme = getTheme(mode);
 
@@ -224,13 +225,11 @@ function AppContent() {
   };
 
   const handleLogin = () => {
-    setIsLoggedIn(true);
-    navigate("/");
+    // This function is no longer used in the new implementation
   };
 
   const handleSignup = () => {
-    setIsLoggedIn(true);
-    navigate("/");
+    // This function is no longer used in the new implementation
   };
 
   const handlePasswordReset = (email: string) => {
@@ -238,9 +237,12 @@ function AppContent() {
     // Normalde burada backend'e istek gönderilecek
   };
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   const commonChatProps = {
@@ -279,7 +281,7 @@ function AppContent() {
                   onSelectChat={handleSelectChat}
                   onDeleteChat={handleDeleteChat}
                   onEditChatTitle={handleEditChatTitle}
-                  isLoggedIn={isLoggedIn}
+                  isLoggedIn={!!user}
                   onLogout={handleLogout}
                   mode={mode}
                   toggleColorMode={toggleColorMode}
@@ -291,7 +293,7 @@ function AppContent() {
           <Route
             path="/chat/:chatId"
             element={
-              isLoggedIn ? (
+              user ? (
                 <motion.div
                   initial="initial"
                   animate="animate"
@@ -310,7 +312,7 @@ function AppContent() {
           <Route
             path="/profile"
             element={
-              isLoggedIn ? (
+              user ? (
                 <motion.div
                   initial="initial"
                   animate="animate"
@@ -329,7 +331,7 @@ function AppContent() {
           <Route
             path="/login"
             element={
-              !isLoggedIn ? (
+              !user ? (
                 <motion.div
                   initial="initial"
                   animate="animate"
@@ -337,7 +339,7 @@ function AppContent() {
                   variants={pageVariants}
                   style={{ width: "100%", height: "100vh" }}
                 >
-                  <Login onLogin={handleLogin} />
+                  <Login />
                 </motion.div>
               ) : (
                 <Navigate to="/" replace />
@@ -348,7 +350,7 @@ function AppContent() {
           <Route
             path="/signup"
             element={
-              !isLoggedIn ? (
+              !user ? (
                 <motion.div
                   initial="initial"
                   animate="animate"
@@ -356,7 +358,7 @@ function AppContent() {
                   variants={pageVariants}
                   style={{ width: "100%", height: "100vh" }}
                 >
-                  <Signup onSignup={handleSignup} />
+                  <Signup />
                 </motion.div>
               ) : (
                 <Navigate to="/" replace />
@@ -367,7 +369,7 @@ function AppContent() {
           <Route
             path="/forgot-password"
             element={
-              !isLoggedIn ? (
+              !user ? (
                 <motion.div
                   initial="initial"
                   animate="animate"
@@ -375,7 +377,7 @@ function AppContent() {
                   variants={pageVariants}
                   style={{ width: "100%", height: "100vh" }}
                 >
-                  <ForgotPassword onResetRequest={handlePasswordReset} />
+                  <ForgotPassword />
                 </motion.div>
               ) : (
                 <Navigate to="/" replace />
@@ -383,7 +385,12 @@ function AppContent() {
             }
           />
 
-          <Route path="/admin" element={<Admin />} />
+          <Route
+            path="/admin"
+            element={
+              user?.role === "admin" ? <Admin /> : <Navigate to="/" replace />
+            }
+          />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
@@ -395,7 +402,9 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <AppContent />
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </BrowserRouter>
   );
 }

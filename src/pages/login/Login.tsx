@@ -14,8 +14,9 @@ import { Visibility, VisibilityOff, Google } from "@mui/icons-material";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { useAuth } from "../../contexts/AuthContext";
 import styles from "./login.module.css";
-import { LoginFormData, LoginProps } from "../../types/auth";
+import { LoginFormData } from "../../types/auth";
 
 const validationSchema = yup.object().shape({
   email: yup
@@ -25,11 +26,12 @@ const validationSchema = yup.object().shape({
   password: yup
     .string()
     .required("Şifrenizi girin")
-    .min(6, "Şifre en az 6 karakter olmalıdır"),
+    .min(8, "Şifre en az 8 karakter olmalıdır"),
 });
 
-const Login = ({ onLogin }: LoginProps) => {
+const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const { login, googleSignIn } = useAuth();
 
   const {
     control,
@@ -43,16 +45,22 @@ const Login = ({ onLogin }: LoginProps) => {
     },
   });
 
-  const onSubmit = (data: LoginFormData) => {
-    // TODO: Implement actual login logic
-    console.log("Login form submitted:", data);
-    onLogin();
+  const onSubmit = async (data: LoginFormData) => {
+    try {
+      await login(data.email, data.password);
+    } catch (error) {
+      console.error("Login error:", error);
+      // TODO: Show error notification
+    }
   };
 
-  const handleGoogleLogin = () => {
-    // TODO: Google OAuth URL'sine yönlendir
-    // window.location.href = "GOOGLE_AUTH_URL_BURAYA_EKLENECEK";
-    console.log("Google login initiated");
+  const handleGoogleLogin = async () => {
+    try {
+      await googleSignIn();
+    } catch (error) {
+      console.error("Google login error:", error);
+      // TODO: Show error notification
+    }
   };
 
   return (
