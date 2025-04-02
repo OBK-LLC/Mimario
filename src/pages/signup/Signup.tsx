@@ -4,24 +4,22 @@ import {
   Typography,
   TextField,
   Button,
-  Checkbox,
-  FormControlLabel,
   InputAdornment,
   IconButton,
   Link as MuiLink,
-  FormHelperText,
-  Divider,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import { Link } from "react-router-dom";
-import { Visibility, VisibilityOff, Google } from "@mui/icons-material";
-import { useForm, Controller } from "react-hook-form";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { useForm, Controller, Resolver } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import PasswordStrengthBar from "react-password-strength-bar-with-style-item";
+import { useAuth } from "../../contexts/AuthContext";
 import styles from "./signup.module.css";
-import { SignupFormData, SignupProps } from "../../types/auth";
+import { SignupFormData } from "../../types/auth";
 
-const validationSchema = yup.object().shape({
+const validationSchema: yup.ObjectSchema<SignupFormData> = yup.object().shape({
   firstName: yup.string().required("Adınızı girin"),
   lastName: yup.string().required("Soyadınızı girin"),
   email: yup
@@ -30,29 +28,31 @@ const validationSchema = yup.object().shape({
     .email("Geçerli bir e-posta adresi girin"),
   password: yup
     .string()
-    .required("Şifre girin")
-    .min(6, "Şifre en az 6 karakter olmalıdır"),
+    .required("Şifrenizi girin")
+    .min(8, "Şifre en az 8 karakter olmalıdır"),
   confirmPassword: yup
     .string()
-    .required("Şifreyi tekrar girin")
+    .required("Şifrenizi tekrar girin")
     .oneOf([yup.ref("password")], "Şifreler eşleşmiyor"),
   agreeToTerms: yup
     .boolean()
     .required()
-    .oneOf([true], "Devam etmek için kabul etmelisiniz"),
+    .oneOf([true], "Kullanım koşullarını kabul etmelisiniz"),
 });
 
-const Signup = ({ onSignup }: SignupProps) => {
+const resolver: Resolver<SignupFormData> = yupResolver(validationSchema);
+
+const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { register } = useAuth();
 
   const {
     control,
     handleSubmit,
-    watch,
     formState: { errors },
   } = useForm<SignupFormData>({
-    resolver: yupResolver(validationSchema),
+    resolver,
     defaultValues: {
       firstName: "",
       lastName: "",
@@ -63,18 +63,14 @@ const Signup = ({ onSignup }: SignupProps) => {
     },
   });
 
-  const password = watch("password");
-
-  const onSubmit = (data: SignupFormData) => {
-    // TODO: Implement actual signup logic
-    console.log("Signup form submitted:", data);
-    onSignup();
-  };
-
-  const handleGoogleSignup = () => {
-    // TODO: Google OAuth URL'sine yönlendir
-    // window.location.href = "GOOGLE_AUTH_URL_BURAYA_EKLENECEK";
-    console.log("Google signup initiated");
+  const onSubmit = async (data: SignupFormData) => {
+    try {
+      await register(data.email, data.password);
+      // Registration successful, user will be automatically redirected
+    } catch (error) {
+      console.error("Registration error:", error);
+      // TODO: Show error notification
+    }
   };
 
   return (
@@ -90,42 +86,33 @@ const Signup = ({ onSignup }: SignupProps) => {
         </div>
 
         <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
-          <div className={styles.formRow}>
-            <div className={styles.formField}>
-              <Controller
-                name="firstName"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    size="small"
-                    label="Ad"
-                    error={!!errors.firstName}
-                    helperText={errors.firstName?.message}
-                    variant="outlined"
-                  />
-                )}
-              />
-            </div>
-
-            <div className={styles.formField}>
-              <Controller
-                name="lastName"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    size="small"
-                    label="Soyad"
-                    error={!!errors.lastName}
-                    helperText={errors.lastName?.message}
-                    variant="outlined"
-                  />
-                )}
-              />
-            </div>
+          <div className={styles.nameFields}>
+            <Controller
+              name="firstName"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Ad"
+                  error={!!errors.firstName}
+                  helperText={errors.firstName?.message}
+                  variant="outlined"
+                />
+              )}
+            />
+            <Controller
+              name="lastName"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Soyad"
+                  error={!!errors.lastName}
+                  helperText={errors.lastName?.message}
+                  variant="outlined"
+                />
+              )}
+            />
           </div>
 
           <div className={styles.formField}>
@@ -136,7 +123,6 @@ const Signup = ({ onSignup }: SignupProps) => {
                 <TextField
                   {...field}
                   fullWidth
-                  size="small"
                   label="E-posta Adresi"
                   type="email"
                   error={!!errors.email}
@@ -155,7 +141,6 @@ const Signup = ({ onSignup }: SignupProps) => {
                 <TextField
                   {...field}
                   fullWidth
-                  size="small"
                   label="Şifre"
                   type={showPassword ? "text" : "password"}
                   error={!!errors.password}
@@ -167,7 +152,6 @@ const Signup = ({ onSignup }: SignupProps) => {
                         <IconButton
                           onClick={() => setShowPassword(!showPassword)}
                           edge="end"
-                          size="small"
                         >
                           {showPassword ? <VisibilityOff /> : <Visibility />}
                         </IconButton>
@@ -187,8 +171,7 @@ const Signup = ({ onSignup }: SignupProps) => {
                 <TextField
                   {...field}
                   fullWidth
-                  size="small"
-                  label="Şifreyi Tekrar Girin"
+                  label="Şifre Tekrar"
                   type={showConfirmPassword ? "text" : "password"}
                   error={!!errors.confirmPassword}
                   helperText={errors.confirmPassword?.message}
@@ -201,7 +184,6 @@ const Signup = ({ onSignup }: SignupProps) => {
                             setShowConfirmPassword(!showConfirmPassword)
                           }
                           edge="end"
-                          size="small"
                         >
                           {showConfirmPassword ? (
                             <VisibilityOff />
@@ -217,24 +199,7 @@ const Signup = ({ onSignup }: SignupProps) => {
             />
           </div>
 
-          {password && (
-            <div className={styles.passwordStrength}>
-              <PasswordStrengthBar
-                password={password}
-                scoreWords={[
-                  "Çok Zayıf",
-                  "Zayıf",
-                  "Orta",
-                  "Güçlü",
-                  "Çok Güçlü",
-                ]}
-                minLength={6}
-                shortScoreWord="Çok Kısa"
-              />
-            </div>
-          )}
-
-          <div className={styles.termsContainer}>
+          <div className={styles.formField}>
             <Controller
               name="agreeToTerms"
               control={control}
@@ -249,31 +214,23 @@ const Signup = ({ onSignup }: SignupProps) => {
                   }
                   label={
                     <Typography variant="body2">
-                      <MuiLink
-                        component={Link}
-                        to="/terms"
-                        className={styles.link}
-                      >
-                        Kullanım Şartları
+                      <MuiLink href="/terms" className={styles.link}>
+                        Kullanım koşullarını
                       </MuiLink>{" "}
-                      ve{" "}
-                      <MuiLink
-                        component={Link}
-                        to="/privacy"
-                        className={styles.link}
-                      >
-                        Gizlilik Politikası
-                      </MuiLink>
-                      'nı kabul ediyorum
+                      kabul ediyorum
                     </Typography>
                   }
                 />
               )}
             />
             {errors.agreeToTerms && (
-              <FormHelperText error>
+              <Typography
+                variant="caption"
+                color="error"
+                className={styles.errorText}
+              >
                 {errors.agreeToTerms.message}
-              </FormHelperText>
+              </Typography>
             )}
           </div>
 
@@ -289,26 +246,6 @@ const Signup = ({ onSignup }: SignupProps) => {
             </Button>
           </div>
         </form>
-
-        <div className={styles.dividerContainer}>
-          <Divider className={styles.divider}>
-            <Typography variant="body2" color="textSecondary">
-              veya
-            </Typography>
-          </Divider>
-        </div>
-
-        <div className={styles.socialLogin}>
-          <Button
-            variant="outlined"
-            fullWidth
-            startIcon={<Google />}
-            onClick={handleGoogleSignup}
-            className={styles.googleButton}
-          >
-            Google ile kayıt ol
-          </Button>
-        </div>
 
         <div className={styles.footer}>
           <Typography variant="body2">

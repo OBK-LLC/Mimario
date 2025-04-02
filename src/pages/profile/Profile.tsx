@@ -9,9 +9,12 @@ import {
   IconButton,
   Alert,
   Collapse,
+  Avatar,
 } from "@mui/material";
 import { Visibility, VisibilityOff, ArrowBack } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import { showToast } from "../../utils/toast";
 import styles from "./profile.module.css";
 
 interface ProfileData {
@@ -21,13 +24,13 @@ interface ProfileData {
 }
 
 interface PasswordData {
-  currentPassword: string;
   newPassword: string;
   confirmPassword: string;
 }
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
+  const { user, changePassword } = useAuth();
   const [profileData, setProfileData] = useState<ProfileData>({
     fullName: "John Doe",
     email: "john@example.com",
@@ -35,12 +38,10 @@ const Profile: React.FC = () => {
   });
 
   const [passwordData, setPasswordData] = useState<PasswordData>({
-    currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
 
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [avatar, setAvatar] = useState<string>("/default-avatar.png");
@@ -62,11 +63,10 @@ const Profile: React.FC = () => {
   };
 
   const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setPasswordData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setPasswordData({
+      ...passwordData,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -96,28 +96,30 @@ const Profile: React.FC = () => {
     }
   };
 
-  const handlePasswordSubmit = async (e: FormEvent) => {
+  const handleSubmitPassword = async (e: FormEvent) => {
     e.preventDefault();
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordMessage({ text: "Şifreler eşleşmiyor", type: "error" });
+
+    // Validation
+    if (passwordData.newPassword.length < 8) {
+      showToast.error("Yeni şifre en az 8 karakter olmalıdır.");
       return;
     }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      showToast.error("Şifreler eşleşmiyor.");
+      return;
+    }
+
     try {
-      // API call to change password would go here
-      setPasswordMessage({
-        text: "Şifre başarıyla değiştirildi!",
-        type: "success",
-      });
+      await changePassword(passwordData.newPassword);
+
+      // Başarılı olduğunda formu temizle
       setPasswordData({
-        currentPassword: "",
         newPassword: "",
         confirmPassword: "",
       });
     } catch (error) {
-      setPasswordMessage({
-        text: "Şifre değiştirilirken bir hata oluştu",
-        type: "error",
-      });
+      console.error("Password change error:", error);
     }
   };
 
@@ -221,36 +223,7 @@ const Profile: React.FC = () => {
             <Typography variant="h5" className={styles.sectionTitle}>
               Şifre Değiştir
             </Typography>
-            <form onSubmit={handlePasswordSubmit} className={styles.form}>
-              <div className={styles.formField}>
-                <TextField
-                  fullWidth
-                  label="Mevcut Şifre"
-                  name="currentPassword"
-                  type={showCurrentPassword ? "text" : "password"}
-                  value={passwordData.currentPassword}
-                  onChange={handlePasswordChange}
-                  variant="outlined"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() =>
-                            setShowCurrentPassword(!showCurrentPassword)
-                          }
-                          edge="end"
-                        >
-                          {showCurrentPassword ? (
-                            <VisibilityOff />
-                          ) : (
-                            <Visibility />
-                          )}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </div>
+            <form onSubmit={handleSubmitPassword} className={styles.form}>
               <div className={styles.formField}>
                 <TextField
                   fullWidth
@@ -308,18 +281,10 @@ const Profile: React.FC = () => {
                 variant="contained"
                 color="primary"
                 fullWidth
-                className={styles.button}
+                className={styles.submitButton}
               >
                 Şifreyi Değiştir
               </Button>
-              <Collapse in={!!passwordMessage}>
-                <Alert
-                  severity={passwordMessage?.type || "info"}
-                  sx={{ mt: 2 }}
-                >
-                  {passwordMessage?.text}
-                </Alert>
-              </Collapse>
             </form>
           </Paper>
         </Box>

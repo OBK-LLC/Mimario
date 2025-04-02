@@ -13,6 +13,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { getTheme } from "./theme/theme";
 import { Message, ChatHistory } from "./types/chat";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Home from "./pages/home/Home";
 import Chat from "./pages/chat/Chat";
 import Login from "./pages/login/Login";
@@ -20,9 +21,16 @@ import Signup from "./pages/signup/Signup";
 import ForgotPassword from "./pages/forgot-password/ForgotPassword";
 import Profile from "./pages/profile/Profile";
 import Admin from "./pages/admin/Admin";
+import AuthCallback from "./components/auth/AuthCallback";
+import Verification from "./pages/verification/Verification";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-const STORAGE_KEY = "mimario-chat-histories";
 const THEME_MODE_KEY = "mimario-theme-mode";
+
+function getStorageKey(userId: string) {
+  return `mimario-chat-histories-${userId}`;
+}
 
 function ChatWrapper(props: any) {
   const { chatId } = useParams();
@@ -40,12 +48,12 @@ function ChatWrapper(props: any) {
 function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, loading, logout } = useAuth();
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
   const [mode, setMode] = useState<"light" | "dark">(
     (localStorage.getItem(THEME_MODE_KEY) as "light" | "dark") ||
       (prefersDarkMode ? "dark" : "light")
   );
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
   const theme = getTheme(mode);
 
@@ -82,7 +90,9 @@ function AppContent() {
   };
 
   const initialChatHistories = () => {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!user?.id) return [];
+
+    const saved = localStorage.getItem(getStorageKey(user.id));
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -103,15 +113,31 @@ function AppContent() {
     return [];
   };
 
-  const [chatHistories, setChatHistories] =
-    useState<ChatHistory[]>(initialChatHistories);
+  const [chatHistories, setChatHistories] = useState<ChatHistory[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string>();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
 
+  // Initialize chat histories when user changes
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistories));
-  }, [chatHistories]);
+    if (user?.id) {
+      setChatHistories(initialChatHistories());
+    } else {
+      setChatHistories([]);
+      setSelectedChatId(undefined);
+      setMessages([]);
+    }
+  }, [user?.id]);
+
+  // Save chat histories when they change
+  useEffect(() => {
+    if (user?.id) {
+      localStorage.setItem(
+        getStorageKey(user.id),
+        JSON.stringify(chatHistories)
+      );
+    }
+  }, [chatHistories, user?.id]);
 
   const handleNewChat = () => {
     const newChatId = uuidv4();
@@ -224,13 +250,11 @@ function AppContent() {
   };
 
   const handleLogin = () => {
-    setIsLoggedIn(true);
-    navigate("/");
+    // This function is no longer used in the new implementation
   };
 
   const handleSignup = () => {
-    setIsLoggedIn(true);
-    navigate("/");
+    // This function is no longer used in the new implementation
   };
 
   const handlePasswordReset = (email: string) => {
@@ -238,9 +262,12 @@ function AppContent() {
     // Normalde burada backend'e istek gönderilecek
   };
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   const commonChatProps = {
@@ -279,7 +306,7 @@ function AppContent() {
                   onSelectChat={handleSelectChat}
                   onDeleteChat={handleDeleteChat}
                   onEditChatTitle={handleEditChatTitle}
-                  isLoggedIn={isLoggedIn}
+                  isLoggedIn={!!user}
                   onLogout={handleLogout}
                   mode={mode}
                   toggleColorMode={toggleColorMode}
@@ -291,7 +318,7 @@ function AppContent() {
           <Route
             path="/chat/:chatId"
             element={
-              isLoggedIn ? (
+              user ? (
                 <motion.div
                   initial="initial"
                   animate="animate"
@@ -310,7 +337,7 @@ function AppContent() {
           <Route
             path="/profile"
             element={
-              isLoggedIn ? (
+              user ? (
                 <motion.div
                   initial="initial"
                   animate="animate"
@@ -329,7 +356,7 @@ function AppContent() {
           <Route
             path="/login"
             element={
-              !isLoggedIn ? (
+              !user ? (
                 <motion.div
                   initial="initial"
                   animate="animate"
@@ -337,7 +364,7 @@ function AppContent() {
                   variants={pageVariants}
                   style={{ width: "100%", height: "100vh" }}
                 >
-                  <Login onLogin={handleLogin} />
+                  <Login />
                 </motion.div>
               ) : (
                 <Navigate to="/" replace />
@@ -348,7 +375,7 @@ function AppContent() {
           <Route
             path="/signup"
             element={
-              !isLoggedIn ? (
+              !user ? (
                 <motion.div
                   initial="initial"
                   animate="animate"
@@ -356,7 +383,7 @@ function AppContent() {
                   variants={pageVariants}
                   style={{ width: "100%", height: "100vh" }}
                 >
-                  <Signup onSignup={handleSignup} />
+                  <Signup />
                 </motion.div>
               ) : (
                 <Navigate to="/" replace />
@@ -367,7 +394,7 @@ function AppContent() {
           <Route
             path="/forgot-password"
             element={
-              !isLoggedIn ? (
+              !user ? (
                 <motion.div
                   initial="initial"
                   animate="animate"
@@ -375,7 +402,7 @@ function AppContent() {
                   variants={pageVariants}
                   style={{ width: "100%", height: "100vh" }}
                 >
-                  <ForgotPassword onResetRequest={handlePasswordReset} />
+                  <ForgotPassword />
                 </motion.div>
               ) : (
                 <Navigate to="/" replace />
@@ -383,11 +410,51 @@ function AppContent() {
             }
           />
 
-          <Route path="/admin" element={<Admin />} />
+          <Route
+            path="/verification"
+            element={
+              !user ? (
+                <motion.div
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  variants={pageVariants}
+                  style={{ width: "100%", height: "100vh" }}
+                >
+                  <Verification />
+                </motion.div>
+              ) : (
+                <Navigate to="/" replace />
+              )
+            }
+          />
+
+          <Route
+            path="/admin"
+            element={
+              user?.role === "admin" ? <Admin /> : <Navigate to="/" replace />
+            }
+          />
+
+          <Route
+            path="/auth/callback"
+            element={
+              <motion.div
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                variants={pageVariants}
+                style={{ width: "100%", height: "100vh" }}
+              >
+                <AuthCallback />
+              </motion.div>
+            }
+          />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AnimatePresence>
+      <ToastContainer />
     </ThemeProvider>
   );
 }
@@ -395,7 +462,9 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <AppContent />
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </BrowserRouter>
   );
 }

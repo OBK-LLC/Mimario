@@ -406,9 +406,9 @@ export const Welcome: React.FC<WelcomeProps> = ({
                     <Button
                       onClick={onLogout}
                       variant="outlined"
-                      color="primary"
+                      color="error"
                       size="large"
-                      startIcon={<LoginIcon />}
+                      startIcon={<LogoutIcon />}
                       sx={{
                         py: 1.5,
                         px: 3,
@@ -416,9 +416,9 @@ export const Welcome: React.FC<WelcomeProps> = ({
                         textTransform: "none",
                         fontSize: "1rem",
                         "&:hover": {
-                          color: "primary.main",
+                          color: "error.main",
                           "& .MuiButton-startIcon": {
-                            color: "primary.main",
+                            color: "error.main",
                           },
                         },
                       }}
