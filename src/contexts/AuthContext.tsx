@@ -77,11 +77,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const response = await authService.login(email, password);
       tokenStorage.setTokens(response.token, response.refresh_token);
       setUser(response.user);
-      showToast.success("Başarıyla giriş yaptınız!");
+      showToast.success("Hoş geldiniz! Başarıyla giriş yaptınız.");
       navigate("/");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
-      showToast.error("Giriş yapılamadı. Lütfen bilgilerinizi kontrol edin.");
+      if (error.message) {
+        showToast.error(error.message);
+      } else {
+        showToast.error("Giriş yapılamadı. Lütfen daha sonra tekrar deneyin.");
+      }
       throw error;
     }
   };
@@ -89,11 +93,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const register = async (email: string, password: string) => {
     try {
       await authService.register(email, password);
-      showToast.success("Kayıt başarılı! Lütfen e-postanızı doğrulayın.");
+      showToast.success(
+        "Kayıt işleminiz başarıyla tamamlandı! Lütfen e-posta adresinize gönderilen doğrulama bağlantısına tıklayın."
+      );
       navigate("/verification");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Registration error:", error);
-      showToast.error("Kayıt yapılamadı. Lütfen bilgilerinizi kontrol edin.");
+      if (error.message) {
+        showToast.error(error.message);
+      } else {
+        showToast.error(
+          "Kayıt işlemi başarısız oldu. Lütfen daha sonra tekrar deneyin."
+        );
+      }
       throw error;
     }
   };
@@ -103,11 +115,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       await authService.logout();
       tokenStorage.clearTokens();
       setUser(null);
-      showToast.success("Başarıyla çıkış yaptınız!");
+      showToast.success(
+        "Güvenli bir şekilde çıkış yaptınız. Tekrar görüşmek üzere!"
+      );
       navigate("/");
     } catch (error) {
       console.error("Logout error:", error);
-      showToast.error("Çıkış yapılırken bir hata oluştu!");
+      showToast.error(
+        "Çıkış yaparken bir sorun oluştu. Ancak güvenliğiniz için oturumunuz sonlandırıldı."
+      );
       tokenStorage.clearTokens();
       setUser(null);
       navigate("/");
@@ -118,11 +134,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       await authService.forgotPassword(email);
       showToast.success(
-        "Şifre sıfırlama bağlantısı e-posta adresinize gönderildi."
+        "Şifre sıfırlama bağlantısı e-posta adresinize gönderildi. Lütfen e-postanızı kontrol edin."
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error("Forgot password error:", error);
-      showToast.error("Şifre sıfırlama bağlantısı gönderilemedi.");
+      if (error.message) {
+        showToast.error(error.message);
+      } else {
+        showToast.error(
+          "Şifre sıfırlama işlemi başarısız oldu. Lütfen daha sonra tekrar deneyin."
+        );
+      }
       throw error;
     }
   };
@@ -130,10 +152,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const changePassword = async (password: string) => {
     try {
       await authService.changePassword(password);
-      showToast.success("Şifreniz başarıyla değiştirildi.");
-    } catch (error) {
+      showToast.success(
+        "Şifreniz başarıyla güncellendi. Yeni şifrenizle giriş yapabilirsiniz."
+      );
+    } catch (error: any) {
       console.error("Change password error:", error);
-      showToast.error("Şifre değiştirilemedi.");
+      if (error.message) {
+        showToast.error(error.message);
+      } else {
+        showToast.error(
+          "Şifre değiştirme işlemi başarısız oldu. Lütfen daha sonra tekrar deneyin."
+        );
+      }
       throw error;
     }
   };

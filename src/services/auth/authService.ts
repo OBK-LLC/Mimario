@@ -22,7 +22,17 @@ export const authService = {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Giriş başarısız");
+        if (data.error === "Invalid login credentials") {
+          throw new Error("E-posta veya şifre hatalı.");
+        }
+        if (data.error === "Email not verified") {
+          throw new Error(
+            "E-posta adresiniz henüz doğrulanmamış. Lütfen e-postanızı kontrol edin."
+          );
+        }
+        throw new Error(
+          data.error || "Giriş yapılamadı. Lütfen daha sonra tekrar deneyin."
+        );
       }
 
       return {
@@ -57,9 +67,34 @@ export const authService = {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Kayıt başarısız");
+        if (data.error === "Email already exists") {
+          throw new Error(
+            "Bu e-posta adresi zaten kayıtlı. Lütfen giriş yapmayı deneyin veya farklı bir e-posta adresi kullanın."
+          );
+        }
+        if (
+          data.error ===
+          "Password must contain at least one number, one lowercase letter, one uppercase letter, and one special character"
+        ) {
+          throw new Error(
+            "Şifreniz en az bir rakam, bir küçük harf, bir büyük harf ve bir özel karakter içermelidir."
+          );
+        }
+        if (data.error?.includes("password")) {
+          throw new Error(
+            "Şifreniz güvenli değil. Lütfen en az 8 karakter uzunluğunda, bir büyük harf, bir küçük harf ve bir rakam içeren bir şifre belirleyin."
+          );
+        }
+        if (data.error?.includes("email")) {
+          throw new Error("Lütfen geçerli bir e-posta adresi girin.");
+        }
+        throw new Error(
+          data.error ||
+            "Kayıt işlemi başarısız oldu. Lütfen daha sonra tekrar deneyin."
+        );
       }
     } catch (error) {
+      console.error("Registration error details:", error);
       throw error;
     }
   },
@@ -76,7 +111,13 @@ export const authService = {
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Şifre sıfırlama isteği başarısız");
+        if (data.error === "User not found") {
+          throw new Error("Bu e-posta adresine kayıtlı bir hesap bulunamadı.");
+        }
+        throw new Error(
+          data.error ||
+            "Şifre sıfırlama işlemi başarısız oldu. Lütfen daha sonra tekrar deneyin."
+        );
       }
     } catch (error) {
       throw error;
@@ -98,7 +139,23 @@ export const authService = {
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Şifre değiştirme başarısız");
+        if (
+          data.error ===
+          "Password must contain at least one number, one lowercase letter, one uppercase letter, and one special character"
+        ) {
+          throw new Error(
+            "Şifreniz en az bir rakam, bir küçük harf, bir büyük harf ve bir özel karakter içermelidir."
+          );
+        }
+        if (data.error?.includes("password")) {
+          throw new Error(
+            "Şifreniz güvenli değil. Lütfen en az 8 karakter uzunluğunda, bir büyük harf, bir küçük harf ve bir rakam içeren bir şifre belirleyin."
+          );
+        }
+        throw new Error(
+          data.error ||
+            "Şifre değiştirme işlemi başarısız oldu. Lütfen daha sonra tekrar deneyin."
+        );
       }
     } catch (error) {
       throw error;
