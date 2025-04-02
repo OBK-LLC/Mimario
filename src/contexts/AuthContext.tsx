@@ -1,6 +1,8 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { authService } from "../services/auth/authService";
+import { tokenStorage } from "../utils/tokenStorage";
+import { showToast } from "../utils/toast";
 
 interface User {
   id: string;
@@ -19,11 +21,21 @@ interface AuthContextType {
   register: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
-  changePassword: (newPassword: string) => Promise<void>;
+  changePassword: (
+    currentPassword: string,
+    newPassword: string
+  ) => Promise<void>;
   googleSignIn: () => Promise<void>;
 }
 
+interface StoredToken {
+  token: string;
+  refresh_token: string;
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const TOKEN_KEY = "auth.token";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -36,17 +48,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     checkUser();
   }, []);
 
+  const getStoredToken = (): StoredToken | null => {
+    const tokenData = localStorage.getItem(TOKEN_KEY);
+    if (!tokenData) return null;
+    try {
+      return JSON.parse(tokenData);
+    } catch {
+      localStorage.removeItem(TOKEN_KEY);
+      return null;
+    }
+  };
+
   const checkUser = async () => {
     try {
-      const tokenData = localStorage.getItem("supabase.auth.token");
-      if (tokenData) {
-        const { token } = JSON.parse(tokenData);
-        const userData = await authService.getCurrentUser(token);
+      const tokens = tokenStorage.getTokens();
+      if (tokens?.token) {
+        const userData = await authService.getCurrentUser(tokens.token);
         setUser(userData);
       }
     } catch (error) {
       console.error("Error checking user session:", error);
-      localStorage.removeItem("supabase.auth.token");
+      tokenStorage.clearTokens();
       setUser(null);
     } finally {
       setLoading(false);
@@ -56,92 +78,80 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const login = async (email: string, password: string) => {
     try {
       const response = await authService.login(email, password);
-      localStorage.setItem(
-        "supabase.auth.token",
-        JSON.stringify({ token: response.token })
-      );
+      tokenStorage.setTokens(response.token, response.refresh_token);
       setUser(response.user);
+      showToast.success("Başarıyla giriş yaptınız!");
       navigate("/");
     } catch (error) {
       console.error("Login error:", error);
+      showToast.error("Giriş yapılamadı. Lütfen bilgilerinizi kontrol edin.");
       throw error;
     }
   };
 
   const register = async (email: string, password: string) => {
     try {
-      const response = await authService.register(email, password);
-      localStorage.setItem(
-        "supabase.auth.token",
-        JSON.stringify({ token: response.token })
-      );
-      setUser(response.user);
-      navigate("/");
+      await authService.register(email, password);
+      showToast.success("Kayıt başarılı! Lütfen e-postanızı doğrulayın.");
+      navigate("/verification");
     } catch (error) {
       console.error("Registration error:", error);
+      showToast.error("Kayıt yapılamadı. Lütfen bilgilerinizi kontrol edin.");
       throw error;
     }
   };
 
   const logout = async () => {
     try {
-      const tokenData = localStorage.getItem("supabase.auth.token");
-      console.log("Attempting logout with token data:", tokenData);
-
-      if (tokenData) {
-        const { token } = JSON.parse(tokenData);
-        console.log("Sending logout request to backend...");
-        await authService.logout(token);
-        console.log("Logout request successful");
-      }
-
-      console.log("Removing token from localStorage...");
-      localStorage.removeItem("supabase.auth.token");
-
-      console.log("Clearing user state...");
+      await authService.logout();
+      tokenStorage.clearTokens();
       setUser(null);
-
-      console.log("Navigating to homepage...");
+      showToast.success("Başarıyla çıkış yaptınız!");
       navigate("/");
     } catch (error) {
       console.error("Logout error:", error);
-      // Even if the backend request fails, we should still clear the local state
-      localStorage.removeItem("supabase.auth.token");
+      showToast.error("Çıkış yapılırken bir hata oluştu!");
+      tokenStorage.clearTokens();
       setUser(null);
       navigate("/");
-      throw error;
     }
   };
 
   const forgotPassword = async (email: string) => {
     try {
       await authService.forgotPassword(email);
+      showToast.success(
+        "Şifre sıfırlama bağlantısı e-posta adresinize gönderildi."
+      );
     } catch (error) {
       console.error("Forgot password error:", error);
+      showToast.error("Şifre sıfırlama bağlantısı gönderilemedi.");
       throw error;
     }
   };
 
-  const changePassword = async (newPassword: string) => {
+  const changePassword = async (
+    currentPassword: string,
+    newPassword: string
+  ) => {
     try {
-      const tokenData = localStorage.getItem("supabase.auth.token");
-      if (!tokenData) {
-        throw new Error("No authentication token found");
-      }
-      const { token } = JSON.parse(tokenData);
-      await authService.changePassword(newPassword, token);
+      await authService.changePassword(currentPassword, newPassword);
+      showToast.success("Şifreniz başarıyla değiştirildi.");
     } catch (error) {
       console.error("Change password error:", error);
+      showToast.error(
+        "Şifre değiştirilemedi. Lütfen mevcut şifrenizi kontrol edin."
+      );
       throw error;
     }
   };
 
   const googleSignIn = async () => {
     try {
-      const { url } = await authService.googleSignIn();
-      window.location.href = url;
+      await authService.googleSignIn();
     } catch (error) {
       console.error("Google sign-in error:", error);
+      showToast.error("Google ile giriş yapılamadı.");
       throw error;
     }
   };

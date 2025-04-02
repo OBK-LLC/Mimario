@@ -21,6 +21,10 @@ import Signup from "./pages/signup/Signup";
 import ForgotPassword from "./pages/forgot-password/ForgotPassword";
 import Profile from "./pages/profile/Profile";
 import Admin from "./pages/admin/Admin";
+import AuthCallback from "./components/auth/AuthCallback";
+import Verification from "./pages/verification/Verification";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const STORAGE_KEY = "mimario-chat-histories";
 const THEME_MODE_KEY = "mimario-theme-mode";
@@ -386,15 +390,50 @@ function AppContent() {
           />
 
           <Route
+            path="/verification"
+            element={
+              !user ? (
+                <motion.div
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  variants={pageVariants}
+                  style={{ width: "100%", height: "100vh" }}
+                >
+                  <Verification />
+                </motion.div>
+              ) : (
+                <Navigate to="/" replace />
+              )
+            }
+          />
+
+          <Route
             path="/admin"
             element={
               user?.role === "admin" ? <Admin /> : <Navigate to="/" replace />
             }
           />
 
+          <Route
+            path="/auth/callback"
+            element={
+              <motion.div
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                variants={pageVariants}
+                style={{ width: "100%", height: "100vh" }}
+              >
+                <AuthCallback />
+              </motion.div>
+            }
+          />
+
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AnimatePresence>
+      <ToastContainer />
     </ThemeProvider>
   );
 }

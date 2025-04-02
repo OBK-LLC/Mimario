@@ -9,9 +9,12 @@ import {
   IconButton,
   Alert,
   Collapse,
+  Avatar,
 } from "@mui/material";
 import { Visibility, VisibilityOff, ArrowBack } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import { showToast } from "../../utils/toast";
 import styles from "./profile.module.css";
 
 interface ProfileData {
@@ -28,6 +31,7 @@ interface PasswordData {
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
+  const { user, changePassword } = useAuth();
   const [profileData, setProfileData] = useState<ProfileData>({
     fullName: "John Doe",
     email: "john@example.com",
@@ -62,11 +66,10 @@ const Profile: React.FC = () => {
   };
 
   const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setPasswordData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setPasswordData({
+      ...passwordData,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -96,28 +99,34 @@ const Profile: React.FC = () => {
     }
   };
 
-  const handlePasswordSubmit = async (e: FormEvent) => {
+  const handleSubmitPassword = async (e: FormEvent) => {
     e.preventDefault();
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordMessage({ text: "Şifreler eşleşmiyor", type: "error" });
+
+    // Validation
+    if (passwordData.newPassword.length < 8) {
+      showToast.error("Yeni şifre en az 8 karakter olmalıdır.");
       return;
     }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      showToast.error("Yeni şifreler eşleşmiyor.");
+      return;
+    }
+
     try {
-      // API call to change password would go here
-      setPasswordMessage({
-        text: "Şifre başarıyla değiştirildi!",
-        type: "success",
-      });
+      await changePassword(
+        passwordData.currentPassword,
+        passwordData.newPassword
+      );
+
+      // Başarılı olduğunda formu temizle
       setPasswordData({
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
       });
     } catch (error) {
-      setPasswordMessage({
-        text: "Şifre değiştirilirken bir hata oluştu",
-        type: "error",
-      });
+      console.error("Password change error:", error);
     }
   };
 
@@ -221,7 +230,7 @@ const Profile: React.FC = () => {
             <Typography variant="h5" className={styles.sectionTitle}>
               Şifre Değiştir
             </Typography>
-            <form onSubmit={handlePasswordSubmit} className={styles.form}>
+            <form onSubmit={handleSubmitPassword} className={styles.form}>
               <div className={styles.formField}>
                 <TextField
                   fullWidth
