@@ -174,21 +174,42 @@ export const Sidebar: React.FC<ExtendedSidebarProps> = ({
                   "&.Mui-selected": {
                     backgroundColor: "action.selected",
                   },
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-start",
+                  py: 2,
+                  px: 2,
                 }}
               >
-                <ListItemIcon>
-                  <ChatIcon color="action" />
-                </ListItemIcon>
-                <ListItemText
-                  primary={chat.title}
-                  secondary={new Date(chat.updatedAt).toLocaleDateString()}
-                  primaryTypographyProps={{
-                    className: styles.chatItemText,
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    width: "100%",
+                    mb: 1,
                   }}
-                />
+                >
+                  <ChatIcon color="action" sx={{ mr: 2 }} />
+                  <Typography variant="body1" sx={{ flex: 1 }}>
+                    {chat.title || chat.name}
+                  </Typography>
+                </Box>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ pl: 4 }}
+                >
+                  {new Date(chat.updatedAt).toLocaleDateString()}
+                </Typography>
               </ListItemButton>
               <Box
                 className={`${styles.chatActionsContainer} ${styles.chatActions}`}
+                sx={{
+                  position: "absolute",
+                  right: 8,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                }}
               >
                 <IconButton
                   size="small"
@@ -204,7 +225,7 @@ export const Sidebar: React.FC<ExtendedSidebarProps> = ({
                   size="small"
                   className={styles.actionIcon}
                   onClick={(e) => handleDelete(e, chat.id)}
-                  sx={{ color: "error.main" }}
+                  sx={{ color: "text.secondary" }}
                 >
                   <DeleteIcon fontSize="small" />
                 </IconButton>

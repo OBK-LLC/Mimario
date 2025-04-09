@@ -1,8 +1,8 @@
 import axios from "axios";
-import { AuthResponse } from "../../types/auth";
+import { AuthResponse, User } from "../../types/auth";
 import { tokenStorage } from "../../utils/tokenStorage";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 const FRONTEND_URL =
   import.meta.env.VITE_FRONTEND_URL || window.location.origin;
 
@@ -23,79 +23,98 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-export const authService = {
-  async login(email: string, password: string): Promise<AuthResponse> {
-    try {
-      const { data } = await api.post("/api/auth/login", {
-        email,
-        password,
-      });
+interface LoginResponse {
+  token: string;
+  user: User;
+}
 
-      return {
-        user: {
-          id: data.user.id,
-          email: data.user.email,
-          role: data.user.role || "user",
-          name: data.user.name,
-          metadata: data.user.metadata || {},
-        },
-        token: data.token,
-        refresh_token: data.refresh_token,
-      };
+class AuthService {
+  private get headers() {
+    return {
+      "Content-Type": "application/json",
+    };
+  }
+
+  async login(email: string, password: string): Promise<LoginResponse> {
+    try {
+      const response = await axios.post<LoginResponse>(
+        `${API_URL}/api/auth/login`,
+        { email, password },
+        { headers: this.headers }
+      );
+      return response.data;
     } catch (error: any) {
       if (error.response) {
-        const data = error.response.data;
-        if (data.error === "Invalid login credentials") {
-          throw new Error("E-posta veya şifre hatalı.");
-        }
-        if (data.error === "Email not verified") {
-          throw new Error(
-            "E-posta adresiniz henüz doğrulanmamış. Lütfen e-postanızı kontrol edin."
-          );
-        }
-        throw new Error(
-          data.error || "Giriş yapılamadı. Lütfen daha sonra tekrar deneyin."
-        );
+        throw new Error(error.response.data.message || "Giriş yapılamadı");
       }
-      throw error;
+      throw new Error("Sunucuya bağlanılamadı");
     }
-  },
+  }
 
   async register(
     email: string,
     password: string,
     metadata?: { full_name?: string }
-  ): Promise<void> {
+  ): Promise<LoginResponse> {
     try {
-      await api.post("/api/auth/register", {
-        email,
-        password,
-        name: metadata?.full_name || "",
-      });
+      const response = await axios.post<LoginResponse>(
+        `${API_URL}/api/auth/register`,
+        { email, password, ...metadata },
+        { headers: this.headers }
+      );
+      return response.data;
     } catch (error: any) {
       if (error.response) {
-        const data = error.response.data;
-        if (data.error === "Email already exists") {
-          throw new Error(
-            "Bu e-posta adresi zaten kayıtlı. Lütfen giriş yapmayı deneyin veya farklı bir e-posta adresi kullanın."
-          );
-        }
-        if (data.error?.includes("password")) {
-          throw new Error(
-            "Şifreniz güvenli değil. Lütfen en az 8 karakter uzunluğunda, bir büyük harf, bir küçük harf ve bir rakam içeren bir şifre belirleyin."
-          );
-        }
-        if (data.error?.includes("email")) {
-          throw new Error("Lütfen geçerli bir e-posta adresi girin.");
-        }
-        throw new Error(
-          data.error ||
-            "Kayıt işlemi başarısız oldu. Lütfen daha sonra tekrar deneyin."
-        );
+        throw new Error(error.response.data.message || "Kayıt olunamadı");
       }
+      throw new Error("Sunucuya bağlanılamadı");
+    }
+  }
+
+  async logout(token: string): Promise<void> {
+    try {
+      await axios.post(
+        `${API_URL}/api/auth/signout`,
+        {},
+        {
+          headers: {
+            ...this.headers,
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+    } catch (error: any) {
+      console.error("Logout error:", error);
       throw error;
     }
-  },
+  }
+
+  async getCurrentUser(): Promise<User> {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("No token found");
+    }
+
+    try {
+      const { data } = await axios.get<User>(
+        `${API_URL}/api/auth/current-user`,
+        {
+          headers: {
+            ...this.headers,
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return data;
+    } catch (error: any) {
+      if (error.response) {
+        throw new Error(
+          error.response.data.error || "Kullanıcı bilgileri alınamadı"
+        );
+      }
+      throw new Error("Sunucuya bağlanılamadı");
+    }
+  }
 
   async forgotPassword(email: string): Promise<void> {
     try {
@@ -113,7 +132,7 @@ export const authService = {
       }
       throw error;
     }
-  },
+  }
 
   async changePassword(password: string): Promise<void> {
     try {
@@ -141,26 +160,7 @@ export const authService = {
       }
       throw error;
     }
-  },
-
-  async getCurrentUser(): Promise<AuthResponse["user"]> {
-    try {
-      const { data } = await api.get("/api/auth/current-user");
-      return {
-        id: data.id,
-        email: data.email,
-        role: data.role,
-        name: data.name,
-        metadata: data.metadata,
-      };
-    } catch (error: any) {
-      if (error.response) {
-        const data = error.response.data;
-        throw new Error(data.error || "Kullanıcı bilgileri alınamadı");
-      }
-      throw error;
-    }
-  },
+  }
 
   async verifyEmail(token: string): Promise<AuthResponse> {
     try {
@@ -183,19 +183,7 @@ export const authService = {
       }
       throw error;
     }
-  },
-
-  async logout(): Promise<void> {
-    try {
-      await api.post("/api/auth/signout");
-    } catch (error: any) {
-      if (error.response) {
-        const data = error.response.data;
-        throw new Error(data.error || "Çıkış yapılamadı");
-      }
-      throw error;
-    }
-  },
+  }
 
   async googleSignIn(): Promise<void> {
     try {
@@ -208,7 +196,7 @@ export const authService = {
       }
       throw error;
     }
-  },
-};
+  }
+}
 
-export default authService;
+export const authService = new AuthService();
