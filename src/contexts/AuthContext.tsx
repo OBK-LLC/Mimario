@@ -1,13 +1,20 @@
-import React, { createContext, useState, useContext, useEffect } from "react";
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  useCallback,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import { authService } from "../services/auth/authService";
 import { tokenStorage } from "../utils/tokenStorage";
 import { showToast } from "../utils/toast";
 import { User } from "../types/auth";
 
-interface AuthContextType {
+export interface AuthContextType {
+  isAuthenticated: boolean;
   user: User | null;
-  loading: boolean;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (
     email: string,
@@ -18,6 +25,7 @@ interface AuthContextType {
   forgotPassword: (email: string) => Promise<void>;
   changePassword: (password: string) => Promise<void>;
   googleSignIn: () => Promise<void>;
+  token: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,44 +34,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [token, setToken] = useState<string | null>(
+    localStorage.getItem("token")
+  );
   const navigate = useNavigate();
+
+  const checkUser = useCallback(async () => {
+    try {
+      const storedToken = localStorage.getItem("token");
+      if (!storedToken) {
+        setUser(null);
+        setToken(null);
+        return;
+      }
+
+      const currentUser = await authService.getCurrentUser();
+      setUser(currentUser);
+      setToken(storedToken);
+    } catch (error) {
+      console.error("Error checking user:", error);
+      setUser(null);
+      setToken(null);
+      localStorage.removeItem("token");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     checkUser();
-  }, []);
-
-  const checkUser = async () => {
-    try {
-      const tokens = tokenStorage.getTokens();
-      if (tokens?.token) {
-        const userData = await authService.getCurrentUser();
-        setUser(userData);
-      }
-    } catch (error) {
-      console.error("Error checking user session:", error);
-      tokenStorage.clearTokens();
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [checkUser]);
 
   const login = async (email: string, password: string) => {
     try {
       const response = await authService.login(email, password);
-      tokenStorage.setTokens(response.token, response.refresh_token);
+      localStorage.setItem("token", response.token);
+      setToken(response.token);
       setUser(response.user);
-      showToast.success("Hoş geldiniz! Başarıyla giriş yaptınız.");
       navigate("/");
     } catch (error: any) {
-      console.error("Login error:", error);
-      if (error.message) {
-        showToast.error(error.message);
-      } else {
-        showToast.error("Giriş yapılamadı. Lütfen daha sonra tekrar deneyin.");
-      }
-      throw error;
+      throw new Error(error.message);
     }
   };
 
@@ -73,41 +84,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     metadata?: { full_name?: string }
   ) => {
     try {
-      await authService.register(email, password, metadata);
-      showToast.success(
-        "Kayıt işleminiz başarıyla tamamlandı! Lütfen e-posta adresinize gönderilen doğrulama bağlantısına tıklayın."
-      );
+      const response = await authService.register(email, password, metadata);
+      localStorage.setItem("token", response.token);
+      setToken(response.token);
+      setUser(response.user);
       navigate("/verification");
     } catch (error: any) {
-      console.error("Registration error:", error);
-      if (error.message) {
-        showToast.error(error.message);
-      } else {
-        showToast.error(
-          "Kayıt işlemi başarısız oldu. Lütfen daha sonra tekrar deneyin."
-        );
-      }
-      throw error;
+      throw new Error(error.message);
     }
   };
 
   const logout = async () => {
     try {
-      await authService.logout();
-      tokenStorage.clearTokens();
-      setUser(null);
-      showToast.success(
-        "Güvenli bir şekilde çıkış yaptınız. Tekrar görüşmek üzere!"
-      );
-      navigate("/");
+      if (token) {
+        await authService.logout(token);
+      }
     } catch (error) {
       console.error("Logout error:", error);
-      showToast.error(
-        "Çıkış yaparken bir sorun oluştu. Ancak güvenliğiniz için oturumunuz sonlandırıldı."
-      );
-      tokenStorage.clearTokens();
+    } finally {
+      localStorage.removeItem("token");
+      setToken(null);
       setUser(null);
-      navigate("/");
+      navigate("/login");
     }
   };
 
@@ -159,22 +157,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        login,
-        register,
-        logout,
-        forgotPassword,
-        changePassword,
-        googleSignIn,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  const value = {
+    isAuthenticated: !!user,
+    user,
+    isLoading,
+    login,
+    register,
+    logout,
+    forgotPassword,
+    changePassword,
+    googleSignIn,
+    token,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

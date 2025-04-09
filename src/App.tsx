@@ -12,7 +12,8 @@ import {
 } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { getTheme } from "./theme/theme";
-import { Message, ChatHistory } from "./types/chat";
+import { Message } from "./types/session";
+import { ChatHistory } from "./types/chat";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Home from "./pages/home/Home";
 import Chat from "./pages/chat/Chat";
@@ -25,6 +26,8 @@ import AuthCallback from "./components/auth/AuthCallback";
 import Verification from "./pages/verification/Verification";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { sessionService } from "./services/session/sessionService";
+import { useSession } from "./hooks/useSession";
 
 const THEME_MODE_KEY = "mimario-theme-mode";
 
@@ -48,7 +51,14 @@ function ChatWrapper(props: any) {
 function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, loading, logout } = useAuth();
+  const { user, isLoading, logout } = useAuth();
+  const {
+    sessions,
+    loading: sessionsLoading,
+    createSession,
+    updateSession,
+    deleteSession,
+  } = useSession();
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
   const [mode, setMode] = useState<"light" | "dark">(
     (localStorage.getItem(THEME_MODE_KEY) as "light" | "dark") ||
@@ -89,164 +99,103 @@ function AppContent() {
     localStorage.setItem(THEME_MODE_KEY, newMode);
   };
 
-  const initialChatHistories = () => {
-    if (!user?.id) return [];
-
-    const saved = localStorage.getItem(getStorageKey(user.id));
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return parsed.map((chat: ChatHistory) => ({
-          ...chat,
-          createdAt: new Date(chat.createdAt),
-          updatedAt: new Date(chat.updatedAt),
-          messages: chat.messages.map((msg) => ({
-            ...msg,
-            timestamp: new Date(msg.timestamp),
-          })),
-        }));
-      } catch (error) {
-        console.error("Local storage parse error:", error);
-        return [];
-      }
-    }
-    return [];
-  };
-
-  const [chatHistories, setChatHistories] = useState<ChatHistory[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string>();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Initialize chat histories when user changes
-  useEffect(() => {
-    if (user?.id) {
-      setChatHistories(initialChatHistories());
-    } else {
-      setChatHistories([]);
-      setSelectedChatId(undefined);
-      setMessages([]);
+  const chatHistories = sessions as unknown as ChatHistory[];
+
+  const handleNewChat = async () => {
+    try {
+      const nextNumber = chatHistories.length + 1;
+      const name = `Yeni Sohbet ${nextNumber}`;
+      const response = await createSession(name, {
+        topic: name,
+      });
+      if (response) {
+        setSelectedChatId(response.id);
+        setMessages(response.messages || []);
+        navigate(`/chat/${response.id}`);
+      }
+    } catch (error) {
+      console.error("Chat creation failed:", error);
     }
-  }, [user?.id]);
-
-  // Save chat histories when they change
-  useEffect(() => {
-    if (user?.id) {
-      localStorage.setItem(
-        getStorageKey(user.id),
-        JSON.stringify(chatHistories)
-      );
-    }
-  }, [chatHistories, user?.id]);
-
-  const handleNewChat = () => {
-    const newChatId = uuidv4();
-    const newChat: ChatHistory = {
-      id: newChatId,
-      title: `Yeni Sohbet ${chatHistories.length + 1}`,
-      messages: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    setChatHistories([...chatHistories, newChat]);
-    setSelectedChatId(newChatId);
-    setMessages([]);
-    navigate(`/chat/${newChatId}`);
   };
 
   const handleSelectChat = (chatId: string) => {
     const selectedChat = chatHistories.find((chat) => chat.id === chatId);
     if (selectedChat) {
       setSelectedChatId(chatId);
-      setMessages(selectedChat.messages);
+      setMessages(selectedChat.messages || []);
       navigate(`/chat/${chatId}`);
     }
   };
 
-  const handleDeleteChat = (chatId: string) => {
-    const updatedHistories = chatHistories.filter((chat) => chat.id !== chatId);
-    setChatHistories(updatedHistories);
-
-    if (selectedChatId === chatId) {
-      const lastChat = updatedHistories[updatedHistories.length - 1];
-      if (lastChat) {
-        setSelectedChatId(lastChat.id);
-        setMessages(lastChat.messages);
-        navigate(`/chat/${lastChat.id}`);
-      } else {
-        setSelectedChatId(undefined);
-        setMessages([]);
-        navigate("/");
+  const handleDeleteChat = async (chatId: string) => {
+    try {
+      await deleteSession(chatId);
+      if (selectedChatId === chatId) {
+        const lastChat = chatHistories[chatHistories.length - 1];
+        if (lastChat) {
+          setSelectedChatId(lastChat.id);
+          setMessages(lastChat.messages || []);
+          navigate(`/chat/${lastChat.id}`);
+        } else {
+          setSelectedChatId(undefined);
+          setMessages([]);
+          navigate("/");
+        }
       }
+    } catch (error) {
+      console.error("Chat deletion failed:", error);
     }
   };
 
-  const handleEditChatTitle = (chatId: string, newTitle: string) => {
-    setChatHistories(
-      chatHistories.map((chat) =>
-        chat.id === chatId
-          ? {
-              ...chat,
-              title: newTitle,
-              updatedAt: new Date(),
-            }
-          : chat
-      )
-    );
+  const handleEditChatTitle = async (chatId: string, newTitle: string) => {
+    try {
+      await updateSession(chatId, newTitle);
+      // Başlık değişikliğini yerel state'te güncellemeye gerek yok
+      // useSession hook'u otomatik olarak güncelleyecek
+    } catch (error) {
+      console.error("Chat update failed:", error);
+    }
   };
 
-  const handleSendMessage = (content: string) => {
+  const handleSendMessage = async (content: string) => {
     if (!selectedChatId) return;
 
     const newMessage: Message = {
       id: uuidv4(),
       content,
+      role: "user",
       sender: "user",
-      timestamp: new Date(),
+      timestamp: Date.now(),
     };
 
-    const updatedMessages = [...messages, newMessage];
-    setMessages(updatedMessages);
+    setMessages((prev) => [...prev, newMessage]);
 
-    setChatHistories(
-      chatHistories.map((chat) =>
-        chat.id === selectedChatId
-          ? {
-              ...chat,
-              messages: updatedMessages,
-              updatedAt: new Date(),
-            }
-          : chat
-      )
-    );
+    try {
+      // Burada API'ye mesaj gönderme işlemi yapılacak
+      setIsGenerating(true);
 
-    setIsGenerating(true);
-    setTimeout(() => {
-      const aiResponse: Message = {
-        id: uuidv4(),
-        content:
-          "Bu bir örnek AI yanıtıdır. API entegrasyonu henüz yapılmamıştır.",
-        sender: "ai",
-        timestamp: new Date(),
-      };
+      // Simüle edilmiş AI yanıtı (gerçek API entegrasyonu yapılacak)
+      setTimeout(() => {
+        const aiResponse: Message = {
+          id: uuidv4(),
+          content:
+            "Bu bir örnek AI yanıtıdır. API entegrasyonu henüz yapılmamıştır.",
+          role: "assistant",
+          sender: "ai",
+          timestamp: Date.now(),
+        };
 
-      const updatedWithAiMessages = [...updatedMessages, aiResponse];
-      setMessages(updatedWithAiMessages);
+        setMessages((prev) => [...prev, aiResponse]);
+        setIsGenerating(false);
+      }, 1000);
+    } catch (error) {
+      console.error("Message sending failed:", error);
       setIsGenerating(false);
-
-      setChatHistories(
-        chatHistories.map((chat) =>
-          chat.id === selectedChatId
-            ? {
-                ...chat,
-                messages: updatedWithAiMessages,
-                updatedAt: new Date(),
-              }
-            : chat
-        )
-      );
-    }, 1500);
+    }
   };
 
   const handleLogin = () => {

@@ -485,54 +485,68 @@ export const Welcome: React.FC<WelcomeProps> = ({
                           sx={{
                             borderRadius: 2,
                             mb: 1,
-                            pr: 8,
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "flex-start",
+                            py: 2,
+                            px: 2,
                           }}
                         >
-                          <ListItemIcon>
-                            <ChatIcon color="action" />
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={chat.title}
-                            secondary={new Date(
-                              chat.updatedAt
-                            ).toLocaleDateString()}
-                            primaryTypographyProps={{
-                              fontWeight: 500,
-                            }}
-                          />
                           <Box
-                            className="chat-actions"
                             sx={{
-                              position: "absolute",
-                              right: 8,
-                              opacity: 0,
-                              transition: "opacity 0.2s",
                               display: "flex",
-                              gap: 0.5,
+                              alignItems: "center",
+                              width: "100%",
+                              mb: 1,
                             }}
                           >
-                            <IconButton
-                              size="small"
-                              onClick={(e) => handleEdit(e, chat)}
-                              sx={{
-                                color: "text.secondary",
-                                "&:hover": { color: "primary.main" },
-                              }}
-                            >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                            <IconButton
-                              size="small"
-                              onClick={(e) => handleDelete(e, chat.id)}
-                              sx={{
-                                color: "text.secondary",
-                                "&:hover": { color: "error.main" },
-                              }}
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
+                            <ChatIcon color="action" sx={{ mr: 2 }} />
+                            <Typography variant="body1" sx={{ flex: 1 }}>
+                              {chat.title || chat.name}
+                            </Typography>
                           </Box>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ pl: 4 }}
+                          >
+                            {new Date(chat.updatedAt).toLocaleDateString()}
+                          </Typography>
                         </ListItemButton>
+                        <Box
+                          className="chat-actions"
+                          sx={{
+                            position: "absolute",
+                            right: 8,
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            opacity: 0,
+                            transition: "opacity 0.2s",
+                            display: "flex",
+                            gap: 0.5,
+                          }}
+                        >
+                          <IconButton
+                            size="small"
+                            onClick={(e) => handleEdit(e, chat)}
+                            sx={{
+                              color: "text.secondary",
+                              "&:hover": { color: "primary.main" },
+                            }}
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={(e) => handleDelete(e, chat.id)}
+                            sx={{
+                              color: "text.secondary",
+                              "&:hover": { color: "error.main" },
+                            }}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
                       </ListItem>
                     ))}
                   </List>

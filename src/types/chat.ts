@@ -1,16 +1,11 @@
-export interface Message {
-  id: string;
-  content: string;
+import { Message as SessionMessage, Session } from "./session";
+
+export interface Message extends SessionMessage {
   sender: "user" | "ai";
-  timestamp: Date;
 }
 
-export interface ChatHistory {
-  id: string;
-  title: string;
+export interface ChatHistory extends Omit<Session, "messages"> {
   messages: Message[];
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export interface ChatInputProps {
