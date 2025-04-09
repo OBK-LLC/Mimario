@@ -3,36 +3,24 @@ import { useNavigate } from "react-router-dom";
 import { authService } from "../services/auth/authService";
 import { tokenStorage } from "../utils/tokenStorage";
 import { showToast } from "../utils/toast";
-
-interface User {
-  id: string;
-  email: string;
-  role: string;
-  metadata?: {
-    avatar_url?: string;
-    full_name?: string;
-  };
-}
+import { User } from "../types/auth";
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    metadata?: { full_name?: string }
+  ) => Promise<void>;
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   changePassword: (password: string) => Promise<void>;
   googleSignIn: () => Promise<void>;
 }
 
-interface StoredToken {
-  token: string;
-  refresh_token: string;
-}
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const TOKEN_KEY = "auth.token";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -45,22 +33,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     checkUser();
   }, []);
 
-  const getStoredToken = (): StoredToken | null => {
-    const tokenData = localStorage.getItem(TOKEN_KEY);
-    if (!tokenData) return null;
-    try {
-      return JSON.parse(tokenData);
-    } catch {
-      localStorage.removeItem(TOKEN_KEY);
-      return null;
-    }
-  };
-
   const checkUser = async () => {
     try {
       const tokens = tokenStorage.getTokens();
       if (tokens?.token) {
-        const userData = await authService.getCurrentUser(tokens.token);
+        const userData = await authService.getCurrentUser();
         setUser(userData);
       }
     } catch (error) {
@@ -90,9 +67,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const register = async (email: string, password: string) => {
+  const register = async (
+    email: string,
+    password: string,
+    metadata?: { full_name?: string }
+  ) => {
     try {
-      await authService.register(email, password);
+      await authService.register(email, password, metadata);
       showToast.success(
         "Kayıt işleminiz başarıyla tamamlandı! Lütfen e-posta adresinize gönderilen doğrulama bağlantısına tıklayın."
       );

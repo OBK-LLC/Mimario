@@ -20,8 +20,7 @@ import styles from "./signup.module.css";
 import { SignupFormData } from "../../types/auth";
 
 const validationSchema: yup.ObjectSchema<SignupFormData> = yup.object().shape({
-  firstName: yup.string().required("Adınızı girin"),
-  lastName: yup.string().required("Soyadınızı girin"),
+  fullName: yup.string().required("Ad ve soyadınızı girin"),
   email: yup
     .string()
     .required("E-posta adresinizi girin")
@@ -54,8 +53,7 @@ const Signup = () => {
   } = useForm<SignupFormData>({
     resolver,
     defaultValues: {
-      firstName: "",
-      lastName: "",
+      fullName: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -65,11 +63,9 @@ const Signup = () => {
 
   const onSubmit = async (data: SignupFormData) => {
     try {
-      await register(data.email, data.password);
-      // Registration successful, user will be automatically redirected
+      await register(data.email, data.password, { full_name: data.fullName });
     } catch (error) {
       console.error("Registration error:", error);
-      // TODO: Show error notification
     }
   };
 
@@ -86,29 +82,17 @@ const Signup = () => {
         </div>
 
         <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
-          <div className={styles.nameFields}>
+          <div className={styles.formField}>
             <Controller
-              name="firstName"
+              name="fullName"
               control={control}
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Ad"
-                  error={!!errors.firstName}
-                  helperText={errors.firstName?.message}
-                  variant="outlined"
-                />
-              )}
-            />
-            <Controller
-              name="lastName"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Soyad"
-                  error={!!errors.lastName}
-                  helperText={errors.lastName?.message}
+                  fullWidth
+                  label="Ad Soyad"
+                  error={!!errors.fullName}
+                  helperText={errors.fullName?.message}
                   variant="outlined"
                 />
               )}

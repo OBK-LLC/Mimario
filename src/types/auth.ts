@@ -4,8 +4,7 @@ export interface LoginFormData {
 }
 
 export interface SignupFormData {
-  firstName: string;
-  lastName: string;
+  fullName: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -16,16 +15,18 @@ export interface ForgotPasswordFormData {
   email: string;
 }
 
-export interface AuthResponse {
-  user: {
-    id: string;
-    email: string;
-    role: string;
-    metadata?: {
-      avatar_url?: string;
-      full_name?: string;
-    };
+export interface User {
+  id: string;
+  email: string;
+  role: string;
+  name: string;
+  metadata?: {
+    avatar_url?: string;
   };
+}
+
+export interface AuthResponse {
+  user: User;
   token: string;
   refresh_token: string;
   error?: string;

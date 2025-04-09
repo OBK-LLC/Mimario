@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, FormEvent } from "react";
+import React, { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -32,9 +32,9 @@ const Profile: React.FC = () => {
   const navigate = useNavigate();
   const { user, changePassword } = useAuth();
   const [profileData, setProfileData] = useState<ProfileData>({
-    fullName: "John Doe",
-    email: "john@example.com",
-    phoneNumber: "+90 555 123 4567",
+    fullName: "",
+    email: "",
+    phoneNumber: "",
   });
 
   const [passwordData, setPasswordData] = useState<PasswordData>({
@@ -53,6 +53,20 @@ const Profile: React.FC = () => {
     text: string;
     type: "success" | "error";
   } | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        fullName: user.name,
+        email: user.email,
+        phoneNumber: "",
+      });
+
+      if (user.metadata?.avatar_url) {
+        setAvatar(user.metadata.avatar_url);
+      }
+    }
+  }, [user]);
 
   const handleProfileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -174,10 +188,10 @@ const Profile: React.FC = () => {
               <div className={styles.formField}>
                 <TextField
                   fullWidth
-                  label="Ad Soyad"
+                  label="İsim Soyisim"
                   name="fullName"
                   value={profileData.fullName}
-                  onChange={handleProfileChange}
+                  disabled
                   variant="outlined"
                 />
               </div>
@@ -188,7 +202,7 @@ const Profile: React.FC = () => {
                   name="email"
                   type="email"
                   value={profileData.email}
-                  onChange={handleProfileChange}
+                  disabled
                   variant="outlined"
                 />
               </div>
@@ -198,7 +212,7 @@ const Profile: React.FC = () => {
                   label="Telefon Numarası"
                   name="phoneNumber"
                   value={profileData.phoneNumber}
-                  onChange={handleProfileChange}
+                  disabled
                   variant="outlined"
                 />
               </div>
