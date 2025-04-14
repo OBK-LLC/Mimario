@@ -24,6 +24,7 @@ export interface User {
   metadata?: {
     avatar_url?: string;
     email_verified?: boolean;
+    full_name?: string;
   };
   created_at?: string;
   last_sign_in?: string;

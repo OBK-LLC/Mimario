@@ -5,6 +5,7 @@ import Message from "../message/Message";
 import ChatInput from "../chat-input/ChatInput";
 import LoadingMessage from "../loading-message/LoadingMessage";
 import { ChatContainerProps } from "../../types/chat";
+import { useAuth } from "../../contexts/AuthContext";
 import {
   Send as SendIcon,
   ArrowForward as ArrowIcon,
@@ -18,6 +19,12 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const theme = useTheme();
+  const { user } = useAuth();
+
+  const capitalize = (str: string) => {
+    if (!str) return str;
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -82,7 +89,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                   mb: 3,
                 }}
               >
-                Merhaba, ben Mimario!
+                Merhaba{user?.name ? ` ${capitalize(user.name)}` : ""}, ben
+                Mimario!
               </Typography>
               <Typography
                 variant="body1"
