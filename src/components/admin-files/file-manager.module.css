@@ -1,78 +1,87 @@
 .container {
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+  width: 100%;
+  background: var(--background-paper);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin: 24px 0;
+  overflow: hidden;
 }
 
-.fileUpload {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.uploadButton {
-  min-width: 150px;
-}
-
-.selectedFile {
-  color: #666;
-}
-
-.fileList {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.fileItem {
+.tableContainer {
+  width: 100%;
   padding: 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: all 0.2s ease;
 }
 
-.fileItem:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.fileInfo {
+.toolbar {
   display: flex;
   align-items: center;
   gap: 16px;
+  margin-bottom: 24px;
+  padding: 0 16px;
 }
 
-.fileIcon {
-  font-size: 32px !important;
-  color: #1976d2;
-}
-
-.fileActions {
+.actions {
   display: flex;
   gap: 8px;
+  justify-content: flex-end;
+}
+
+.actions button {
+  padding: 6px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.actions button:hover {
+  background-color: var(--action-hover);
 }
 
 .pagination {
   display: flex;
   justify-content: center;
-  margin-top: 16px;
+  padding: 20px;
+  background: var(--background-paper);
+  border-top: 1px solid var(--divider);
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.error {
+  margin: 16px;
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin: 16px 0;
+    border-radius: 8px;
+  }
+
+  .tableContainer {
+    padding: 12px;
+  }
+
+  .toolbar {
+    padding: 0 12px;
+    margin-bottom: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .actions {
+    flex-direction: row;
+    gap: 4px;
+  }
 }
 
 @media (max-width: 600px) {
-  .container {
-    padding: 16px;
-  }
-
-  .fileItem {
+  .actions {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .fileActions {
-    width: 100%;
-    justify-content: flex-end;
+    gap: 4px;
   }
 }

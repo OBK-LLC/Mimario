@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -9,50 +9,63 @@ import {
   Typography,
   Chip,
   Pagination,
+  IconButton,
+  Avatar,
+  CircularProgress,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Paper,
+  Box,
 } from "@mui/material";
-import { Email as EmailIcon, Phone as PhoneIcon } from "@mui/icons-material";
+import {
+  Email as EmailIcon,
+  Phone as PhoneIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  AdminPanelSettings as AdminIcon,
+  Person as UserIcon,
+} from "@mui/icons-material";
 import styles from "./users-list.module.css";
+import userService, { User } from "../../services/user/userService";
+import { useAuth } from "../../contexts/AuthContext";
 
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-  status: string;
-  joinDate: string;
-}
-
-const mockUsers = [
-  {
-    id: 1,
-    name: "Ahmet Yılmaz",
-    email: "ahmet@example.com",
-    phone: "+90 555 123 4567",
-    status: "active",
-    joinDate: "2024-01-15",
-  },
-  {
-    id: 2,
-    name: "Mehmet Demir",
-    email: "mehmet@example.com",
-    phone: "+90 555 234 5678",
-    status: "inactive",
-    joinDate: "2024-01-10",
-  },
-  {
-    id: 3,
-    name: "Ayşe Kaya",
-    email: "ayse@example.com",
-    phone: "+90 555 345 6789",
-    status: "active",
-    joinDate: "2024-01-05",
-  },
-];
 const ITEMS_PER_PAGE = 10;
 
 const UsersList: React.FC = () => {
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  const { user: currentUser } = useAuth();
+  const [users, setUsers] = useState<User[]>([]);
   const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
+
+  const loadUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await userService.fetchUsers(page, ITEMS_PER_PAGE);
+      setUsers(response.users);
+      setTotalPages(response.pagination.pages);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Kullanıcılar yüklenirken bir hata oluştu"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadUsers();
+  }, [page]);
 
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
@@ -61,76 +74,238 @@ const UsersList: React.FC = () => {
     setPage(value);
   };
 
-  const handleStatusChange = (userId: number) => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.id === userId
-          ? {
-              ...user,
-              status: user.status === "active" ? "inactive" : "active",
-            }
-          : user
-      )
-    );
+  const handleStatusChange = async (userId: string, currentRole: string) => {
+    try {
+      const newRole = currentRole === "user" ? "admin" : "user";
+      await userService.updateUser(userId, { role: newRole });
+      await loadUsers(); // Refresh the list
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Kullanıcı rolü güncellenirken bir hata oluştu"
+      );
+    }
   };
 
-  const startIndex = (page - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const handleDeleteClick = (userId: string) => {
+    setUserToDelete(userId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!userToDelete) return;
+
+    try {
+      await userService.deleteUser(userToDelete);
+      await loadUsers();
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Kullanıcı silinirken bir hata oluştu"
+      );
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <CircularProgress />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert severity="error" className={styles.error}>
+        {error}
+      </Alert>
+    );
+  }
 
   return (
-    <div className={styles.container}>
-      <TableContainer>
+    <Box className={styles.container}>
+      <Paper elevation={0} className={styles.tableContainer}>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>İsim</TableCell>
-              <TableCell>E-posta</TableCell>
-              <TableCell>Telefon</TableCell>
-              <TableCell>Katılım Tarihi</TableCell>
-              <TableCell>Durum</TableCell>
+              <TableCell>
+                <Typography variant="subtitle2" fontWeight={600}>
+                  Kullanıcı
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="subtitle2" fontWeight={600}>
+                  E-posta
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="subtitle2" fontWeight={600}>
+                  Rol
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="subtitle2" fontWeight={600}>
+                  Kayıt Tarihi
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="subtitle2" fontWeight={600}>
+                  İşlemler
+                </Typography>
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {users.slice(startIndex, endIndex).map((user) => (
-              <TableRow key={user.id}>
+            {users.map((user) => (
+              <TableRow
+                key={user.id}
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "action.hover",
+                  },
+                }}
+              >
                 <TableCell>
-                  <Typography variant="subtitle2">{user.name}</Typography>
+                  <div className={styles.userInfo}>
+                    <Avatar
+                      src={user.metadata?.avatar_url}
+                      alt={user.name}
+                      sx={{
+                        width: 40,
+                        height: 40,
+                        bgcolor:
+                          user.role === "admin"
+                            ? "primary.main"
+                            : "secondary.main",
+                      }}
+                    >
+                      {user.name?.charAt(0)}
+                    </Avatar>
+                    <div>
+                      <Typography variant="body2" fontWeight={500}>
+                        {user.display_name || user.name}
+                      </Typography>
+                      <Typography variant="caption" color="textSecondary">
+                        ID: {user.id}
+                      </Typography>
+                    </div>
+                  </div>
                 </TableCell>
                 <TableCell>
                   <div className={styles.infoItem}>
                     <EmailIcon fontSize="small" />
-                    <span>{user.email}</span>
+                    <Typography variant="body2">{user.email}</Typography>
                   </div>
                 </TableCell>
-                <TableCell>
-                  <div className={styles.infoItem}>
-                    <PhoneIcon fontSize="small" />
-                    <span>{user.phone}</span>
-                  </div>
-                </TableCell>
-                <TableCell>{user.joinDate}</TableCell>
                 <TableCell>
                   <Chip
-                    label={user.status === "active" ? "Aktif" : "Pasif"}
-                    color={user.status === "active" ? "success" : "default"}
+                    icon={
+                      user.role === "admin" ? (
+                        <AdminIcon fontSize="small" />
+                      ) : (
+                        <UserIcon fontSize="small" />
+                      )
+                    }
+                    label={user.role === "admin" ? "Admin" : "Kullanıcı"}
+                    color={user.role === "admin" ? "primary" : "default"}
                     size="small"
-                    onClick={() => handleStatusChange(user.id)}
+                    onClick={() => handleStatusChange(user.id, user.role)}
+                    sx={{
+                      fontWeight: 500,
+                      "&:hover": {
+                        opacity: 0.9,
+                      },
+                    }}
                   />
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2">
+                    {user.created_at &&
+                      new Date(user.created_at).toLocaleDateString("tr-TR")}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <div className={styles.actions}>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleStatusChange(user.id, user.role)}
+                      disabled={user.id === currentUser?.id}
+                      color="primary"
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => handleDeleteClick(user.id)}
+                      disabled={user.id === currentUser?.id}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-      </TableContainer>
-      <div className={styles.pagination}>
-        <Pagination
-          count={Math.ceil(users.length / ITEMS_PER_PAGE)}
-          page={page}
-          onChange={handlePageChange}
-          color="primary"
-        />
-      </div>
-    </div>
+        <div className={styles.pagination}>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={handlePageChange}
+            color="primary"
+            size="large"
+            shape="rounded"
+          />
+        </div>
+      </Paper>
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        PaperProps={{
+          elevation: 0,
+          sx: {
+            borderRadius: 2,
+            p: 1,
+          },
+        }}
+      >
+        <DialogTitle>
+          <Typography variant="h6" fontWeight={600}>
+            Kullanıcıyı Sil
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1">
+            Bu kullanıcıyı silmek istediğinizden emin misiniz?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setDeleteDialogOpen(false)}
+            sx={{ textTransform: "none" }}
+          >
+            İptal
+          </Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            color="error"
+            variant="contained"
+            sx={{
+              textTransform: "none",
+              fontWeight: 500,
+            }}
+          >
+            Sil
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 };
 

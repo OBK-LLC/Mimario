@@ -1,87 +1,228 @@
 .container {
+  width: 100%;
+  background: var(--background-paper);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin: 24px 0;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+
+.container:hover {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+}
+
+.tableContainer {
+  width: 100%;
+  padding: 20px;
+}
+
+.userInfo {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  height: 100%;
+  gap: 4px;
 }
 
-.feedbackList {
+.userInfo > p:first-child {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.userInfo > p:last-child {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.userDetails {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  flex: 1;
-  overflow-y: auto;
+  gap: 12px;
 }
 
-.feedbackItem {
-  padding: 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  transition: all 0.2s ease;
-}
-
-.feedbackItem:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.feedbackContent {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.feedbackHeader {
+.userDetailRow {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.typeChip {
-  min-width: 80px;
+.userDetailLabel {
+  min-width: 60px;
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
-.ratingContainer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 4px 0;
+.userDetailValue {
+  color: var(--text-primary);
 }
 
-.message {
-  margin: 8px 0;
+.messageContent {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+  padding: 8px 0;
   line-height: 1.5;
 }
 
-.feedbackActions {
+.comment {
+  margin-top: 8px;
+  font-style: italic;
+}
+
+.actions {
   display: flex;
   gap: 8px;
-  margin-left: 16px;
+  justify-content: flex-end;
+}
+
+.actions button {
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.actions button:hover {
+  background-color: var(--action-hover);
+  transform: translateY(-1px);
 }
 
 .pagination {
   display: flex;
   justify-content: center;
-  padding: 16px 0;
-  background: white;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  background: var(--background-paper);
+  border-top: 1px solid var(--divider);
+}
+
+.pageButton {
+  min-width: 32px;
+  height: 32px;
+  border: 1px solid var(--divider);
+  background: transparent;
+  border-radius: 4px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pageButton:hover:not(:disabled) {
+  background: var(--action-hover);
+}
+
+.pageButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.activePage {
+  background: var(--primary-main) !important;
+  color: white !important;
+  border-color: var(--primary-main) !important;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.error {
+  margin: 16px;
+  border-radius: 12px;
+}
+
+.dialogContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 8px;
+}
+
+.infoSection {
+  background: var(--background-default);
+  border-radius: 8px;
+  border: 1px solid var(--divider);
+}
+
+.infoHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--background-paper);
+  border-bottom: 1px solid var(--divider);
+  border-radius: 8px 8px 0 0;
+}
+
+.infoHeader svg {
+  color: var(--primary-main);
+  font-size: 20px;
+}
+
+.infoContent {
+  padding: 16px;
+  color: var(--text-secondary);
+}
+
+.infoContent p {
+  margin: 4px 0;
+  line-height: 1.6;
+}
+
+.subtitle {
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  color: var(--text-primary);
+  margin-bottom: 16px !important;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--divider);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.content {
+  color: var(--text-secondary);
+  padding: 0 4px;
+}
+
+.content p {
+  margin: 8px 0;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin: 16px 0;
+    border-radius: 12px;
+  }
+
+  .tableContainer {
+    padding: 16px;
+  }
+
+  .messageContent {
+    max-width: 200px;
+  }
+
+  .actions {
+    flex-direction: column;
+    gap: 4px;
+  }
 }
 
 @media (max-width: 600px) {
-  .container {
-    gap: 16px;
-  }
-
-  .feedbackItem {
+  .actions {
     flex-direction: column;
-    gap: 16px;
+    gap: 4px;
   }
 
-  .feedbackActions {
-    width: 100%;
-    margin-left: 0;
-    justify-content: flex-end;
+  .messageContent {
+    max-width: 200px;
   }
 }

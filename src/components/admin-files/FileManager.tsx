@@ -6,6 +6,19 @@ import {
   Paper,
   Tooltip,
   Pagination,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Box,
+  CircularProgress,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import {
   Upload as UploadIcon,
@@ -57,12 +70,16 @@ const mockFiles = [
   },
 ];
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 
 const FileManager: React.FC = () => {
   const [files, setFiles] = useState<FileData[]>(mockFiles);
   const [page, setPage] = useState(1);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState<number | null>(null);
 
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
@@ -81,15 +98,26 @@ const FileManager: React.FC = () => {
         type: file.type.split("/")[1] || "document",
         size: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
         uploadDate: new Date().toISOString().split("T")[0],
-        uploadedBy: "Aktif Kullanıcı", // Bu bilgi auth sisteminden gelecek
+        uploadedBy: "Aktif Kullanıcı",
         downloads: 0,
       };
       setFiles((prevFiles) => [...prevFiles, fileData]);
     }
   };
 
-  const handleFileDelete = (fileId: number) => {
-    setFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileId));
+  const handleDeleteClick = (fileId: number) => {
+    setFileToDelete(fileId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (fileToDelete === null) return;
+
+    setFiles((prevFiles) =>
+      prevFiles.filter((file) => file.id !== fileToDelete)
+    );
+    setDeleteDialogOpen(false);
+    setFileToDelete(null);
   };
 
   const handleFileDownload = (fileId: number) => {
@@ -98,88 +126,193 @@ const FileManager: React.FC = () => {
         file.id === fileId ? { ...file, downloads: file.downloads + 1 } : file
       )
     );
-    // Burada gerçek dosya indirme işlemi yapılacak
   };
 
   const getFileIcon = (type: string) => {
     switch (type) {
       case "pdf":
-        return <PdfIcon className={styles.fileIcon} />;
+        return <PdfIcon fontSize="small" />;
       case "image":
-        return <ImageIcon className={styles.fileIcon} />;
+        return <ImageIcon fontSize="small" />;
       default:
-        return <DocumentIcon className={styles.fileIcon} />;
+        return <DocumentIcon fontSize="small" />;
     }
   };
 
-  const startIndex = (page - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
+  if (loading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <CircularProgress />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert severity="error" className={styles.error}>
+        {error}
+      </Alert>
+    );
+  }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.fileUpload}>
-        <Button
-          variant="outlined"
-          startIcon={<UploadIcon />}
-          component="label"
-          className={styles.uploadButton}
-        >
-          Dosya Yükle
-          <input type="file" hidden onChange={handleFileUpload} />
-        </Button>
-        {selectedFile && (
-          <Typography variant="body2" className={styles.selectedFile}>
-            Seçilen dosya: {selectedFile.name}
-          </Typography>
-        )}
-      </div>
+    <Box className={styles.container}>
+      <Paper elevation={0} className={styles.tableContainer}>
+        <Box className={styles.toolbar}>
+          <Button
+            variant="contained"
+            startIcon={<UploadIcon />}
+            component="label"
+            sx={{
+              textTransform: "none",
+              fontWeight: 500,
+            }}
+          >
+            Dosya Yükle
+            <input type="file" hidden onChange={handleFileUpload} />
+          </Button>
+          {selectedFile && (
+            <Typography variant="body2" color="text.secondary">
+              Seçilen dosya: {selectedFile.name}
+            </Typography>
+          )}
+        </Box>
 
-      <div className={styles.fileList}>
-        {files.slice(startIndex, endIndex).map((file) => (
-          <Paper key={file.id} className={styles.fileItem}>
-            <div className={styles.fileInfo}>
-              {getFileIcon(file.type)}
-              <div>
-                <Typography variant="subtitle2">{file.name}</Typography>
-                <Typography variant="body2" color="textSecondary">
-                  {file.size} • Yükleyen: {file.uploadedBy}
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  Yüklenme: {file.uploadDate} • {file.downloads} İndirme
-                </Typography>
-              </div>
-            </div>
-            <div className={styles.fileActions}>
-              <Tooltip title="İndir">
-                <IconButton
-                  size="small"
-                  onClick={() => handleFileDownload(file.id)}
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>
+                  <Typography variant="subtitle2" fontWeight={600}>
+                    Dosya
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="subtitle2" fontWeight={600}>
+                    Boyut
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="subtitle2" fontWeight={600}>
+                    Yükleyen
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="subtitle2" fontWeight={600}>
+                    Tarih
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="subtitle2" fontWeight={600}>
+                    İşlemler
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {files.map((file) => (
+                <TableRow
+                  key={file.id}
+                  sx={{
+                    "&:hover": {
+                      backgroundColor: "action.hover",
+                    },
+                  }}
                 >
-                  <DownloadIcon />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Sil">
-                <IconButton
-                  size="small"
-                  color="error"
-                  onClick={() => handleFileDelete(file.id)}
-                >
-                  <DeleteIcon />
-                </IconButton>
-              </Tooltip>
-            </div>
-          </Paper>
-        ))}
-      </div>
-      <div className={styles.pagination}>
-        <Pagination
-          count={Math.ceil(files.length / ITEMS_PER_PAGE)}
-          page={page}
-          onChange={handlePageChange}
-          color="primary"
-        />
-      </div>
-    </div>
+                  <TableCell>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      {getFileIcon(file.type)}
+                      <Typography variant="body2">{file.name}</Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">{file.size}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">{file.uploadedBy}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {new Date(file.uploadDate).toLocaleDateString("tr-TR")}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <div className={styles.actions}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleFileDownload(file.id)}
+                        color="primary"
+                      >
+                        <DownloadIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => handleDeleteClick(file.id)}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <div className={styles.pagination}>
+          <Pagination
+            count={Math.ceil(files.length / ITEMS_PER_PAGE)}
+            page={page}
+            onChange={handlePageChange}
+            color="primary"
+            size="large"
+            shape="rounded"
+          />
+        </div>
+      </Paper>
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        PaperProps={{
+          elevation: 0,
+          sx: {
+            borderRadius: 2,
+            p: 1,
+          },
+        }}
+      >
+        <DialogTitle>
+          <Typography variant="h6" fontWeight={600}>
+            Dosyayı Sil
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1">
+            Bu dosyayı silmek istediğinizden emin misiniz?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setDeleteDialogOpen(false)}
+            sx={{ textTransform: "none" }}
+          >
+            İptal
+          </Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            color="error"
+            variant="contained"
+            sx={{
+              textTransform: "none",
+              fontWeight: 500,
+            }}
+          >
+            Sil
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 };
 

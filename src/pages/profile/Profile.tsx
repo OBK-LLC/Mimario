@@ -10,11 +10,13 @@ import {
   Alert,
   Collapse,
   Avatar,
+  Snackbar,
 } from "@mui/material";
 import { Visibility, VisibilityOff, ArrowBack } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { showToast } from "../../utils/toast";
+import { userService } from "../../services/user/userService";
 import styles from "./profile.module.css";
 
 interface ProfileData {
@@ -53,6 +55,8 @@ const Profile: React.FC = () => {
     text: string;
     type: "success" | "error";
   } | null>(null);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     if (user) {
@@ -153,6 +157,20 @@ const Profile: React.FC = () => {
       });
     } catch (error) {
       console.error("Password change error:", error);
+    }
+  };
+
+  const handleUpdateProfile = async () => {
+    try {
+      const updatedUser = await userService.updateProfile({
+        display_name: profileData.fullName,
+        email: profileData.email,
+        phone: profileData.phoneNumber,
+      });
+      setSuccessMessage("Profil başarıyla güncellendi");
+      // Kullanıcı bilgilerini güncelle
+    } catch (error: any) {
+      setErrorMessage(error.message || "Profil güncellenemedi");
     }
   };
 
@@ -322,6 +340,26 @@ const Profile: React.FC = () => {
           </Paper>
         </Box>
       </Box>
+
+      <Snackbar
+        open={!!successMessage}
+        autoHideDuration={6000}
+        onClose={() => setSuccessMessage("")}
+      >
+        <Alert onClose={() => setSuccessMessage("")} severity="success">
+          {successMessage}
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={!!errorMessage}
+        autoHideDuration={6000}
+        onClose={() => setErrorMessage("")}
+      >
+        <Alert onClose={() => setErrorMessage("")} severity="error">
+          {errorMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

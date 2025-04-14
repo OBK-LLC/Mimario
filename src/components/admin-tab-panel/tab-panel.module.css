@@ -3,6 +3,7 @@
   flex-direction: column;
   flex: 1;
   overflow: hidden;
+  background: var(--background-paper);
 }
 
 .tabContent {
@@ -10,6 +11,7 @@
   padding: 24px;
   overflow-y: auto;
   height: calc(100vh - 250px);
+  background: var(--background-paper);
 }
 
 @media (max-width: 600px) {
