@@ -191,6 +191,7 @@ const Chat: React.FC<ChatPageProps> = ({
           messages={messages}
           onSendMessage={onSendMessage}
           isGenerating={isGenerating}
+          sessionId={selectedChatId || ""}
         />
       </Box>
     </Box>

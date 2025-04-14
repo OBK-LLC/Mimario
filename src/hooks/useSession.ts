@@ -6,6 +6,7 @@ import { Session, PaginationInfo } from "../types/session";
 export function useSession() {
   const { token } = useAuth();
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [currentSession, setCurrentSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<PaginationInfo>({
@@ -37,8 +38,10 @@ export function useSession() {
   ) => {
     try {
       const response = await sessionService.createSession(name, metadata);
-      setSessions((prev) => [...prev, response.data!]);
-      return response.data;
+      const newSession = response.data!;
+      setSessions((prev) => [...prev, newSession]);
+      setCurrentSession(newSession);
+      return response;
     } catch (err: any) {
       setError(err.message);
       throw err;
@@ -69,15 +72,22 @@ export function useSession() {
     }
   };
 
+  const setActiveSession = (sessionId: string) => {
+    const session = sessions.find((s) => s.id === sessionId);
+    if (session) {
+      setCurrentSession(session);
+    }
+  };
+
   useEffect(() => {
     if (token) {
-      sessionService.setToken(token);
       fetchSessions();
     }
   }, [token, fetchSessions]);
 
   return {
     sessions,
+    currentSession,
     loading,
     error,
     pagination,
@@ -85,5 +95,6 @@ export function useSession() {
     updateSession,
     deleteSession,
     fetchSessions,
+    setActiveSession,
   };
 }
