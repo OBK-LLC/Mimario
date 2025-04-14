@@ -58,6 +58,23 @@ class SessionService {
     return response.data;
   }
 
+  async getSessionMessages(sessionId: string) {
+    const response = await axios.get<ApiResponse<any[]>>(
+      `${API_URL}/api/v1/sessions/${sessionId}/messages`,
+      { headers: this.headers }
+    );
+    return response.data;
+  }
+
+  async updateSessionMessages(sessionId: string, messages: any[]) {
+    const response = await axios.put<ApiResponse<Session>>(
+      `${API_URL}/api/v1/sessions/${sessionId}/messages`,
+      { messages },
+      { headers: this.headers }
+    );
+    return response.data;
+  }
+
   setToken(token: string) {
     this.token = token;
   }

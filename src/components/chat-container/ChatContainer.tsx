@@ -5,6 +5,7 @@ import Message from "../message/Message";
 import ChatInput from "../chat-input/ChatInput";
 import LoadingMessage from "../loading-message/LoadingMessage";
 import { ChatContainerProps } from "../../types/chat";
+import { useAuth } from "../../contexts/AuthContext";
 import {
   Send as SendIcon,
   ArrowForward as ArrowIcon,
@@ -18,6 +19,14 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const theme = useTheme();
+  const { user } = useAuth();
+
+  console.log("ChatContainer user:", user);
+
+  const capitalize = (str: string) => {
+    if (!str) return str;
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -82,7 +91,11 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                   mb: 3,
                 }}
               >
-                Merhaba, ben Mimario!
+                {`Merhaba${
+                  user?.name && typeof user.name === "string"
+                    ? ` ${capitalize(user.name)}`
+                    : ""
+                }! Ben Mimario!`}
               </Typography>
               <Typography
                 variant="body1"
@@ -97,9 +110,9 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                   lineHeight: 1.8,
                 }}
               >
-                Mimari mevzuatlar ve teknik konularda size yardımcı olmak için
-                buradayım. Aşağıdaki örnek sorulardan birini seçebilir veya
-                kendi sorunuzu yazabilirsiniz.
+                Mimari mevzuatlar, yönetmelikler ve teknik konularda size
+                yardımcı olmak için buradayım. Aşağıdaki örnek sorulardan birini
+                seçebilir veya kendi sorunuzu sorabilirsiniz.
               </Typography>
               <Box maxWidth={600} mx="auto" sx={{ width: "100%" }}>
                 {exampleQuestions.map((question, index) => (

@@ -6,28 +6,6 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 const FRONTEND_URL =
   import.meta.env.VITE_FRONTEND_URL || window.location.origin;
 
-// Axios instance oluşturuyoruz
-const api = axios.create({
-  baseURL: API_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-// Request interceptor - her istekte token varsa ekliyor
-api.interceptors.request.use((config) => {
-  const tokens = tokenStorage.getTokens();
-  if (tokens?.token) {
-    config.headers.Authorization = `Bearer ${tokens.token}`;
-  }
-  return config;
-});
-
-interface LoginResponse {
-  token: string;
-  user: User;
-}
-
 class AuthService {
   private get headers() {
     return {
@@ -59,7 +37,11 @@ class AuthService {
     try {
       const response = await axios.post<LoginResponse>(
         `${API_URL}/api/auth/register`,
-        { email, password, ...metadata },
+        {
+          email,
+          password,
+          display_name: metadata?.full_name,
+        },
         { headers: this.headers }
       );
       return response.data;
@@ -90,8 +72,8 @@ class AuthService {
   }
 
   async getCurrentUser(): Promise<User> {
-    const token = localStorage.getItem("token");
-    if (!token) {
+    const tokens = tokenStorage.getTokens();
+    if (!tokens?.token) {
       throw new Error("No token found");
     }
 
@@ -101,11 +83,14 @@ class AuthService {
         {
           headers: {
             ...this.headers,
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${tokens.token}`,
           },
         }
       );
-      return data;
+      return {
+        ...data,
+        display_name: data.display_name || data.name || "",
+      };
     } catch (error: any) {
       if (error.response) {
         throw new Error(
@@ -118,7 +103,11 @@ class AuthService {
 
   async forgotPassword(email: string): Promise<void> {
     try {
-      await api.post("/api/auth/reset-password", { email });
+      await axios.post(
+        `${API_URL}/api/auth/reset-password`,
+        { email },
+        { headers: this.headers }
+      );
     } catch (error: any) {
       if (error.response) {
         const data = error.response.data;
@@ -135,8 +124,18 @@ class AuthService {
   }
 
   async changePassword(password: string): Promise<void> {
+    const token = localStorage.getItem("token");
     try {
-      await api.put("/api/auth/change-password", { password });
+      await axios.put(
+        `${API_URL}/api/auth/change-password`,
+        { password },
+        {
+          headers: {
+            ...this.headers,
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
     } catch (error: any) {
       if (error.response) {
         const data = error.response.data;
@@ -164,7 +163,13 @@ class AuthService {
 
   async verifyEmail(token: string): Promise<AuthResponse> {
     try {
-      const { data } = await api.post(`/api/auth/verify-email?token=${token}`);
+      const { data } = await axios.post(
+        `${API_URL}/api/auth/verify-email?token=${token}`,
+        {},
+        {
+          headers: this.headers,
+        }
+      );
       return {
         user: {
           id: data.user.id,
@@ -185,9 +190,32 @@ class AuthService {
     }
   }
 
+  async resendVerification(token: string): Promise<void> {
+    try {
+      await axios.post(
+        `${API_URL}/api/auth/resend-verification`,
+        {},
+        {
+          headers: {
+            ...this.headers,
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+    } catch (error: any) {
+      if (error.response) {
+        const data = error.response.data;
+        throw new Error(data.error || "Doğrulama e-postası gönderilemedi");
+      }
+      throw error;
+    }
+  }
+
   async googleSignIn(): Promise<void> {
     try {
-      const { data } = await api.get("/api/auth/signin/google");
+      const { data } = await axios.get(`${API_URL}/api/auth/signin/google`, {
+        headers: this.headers,
+      });
       window.location.href = data.url;
     } catch (error: any) {
       if (error.response) {
@@ -197,6 +225,27 @@ class AuthService {
       throw error;
     }
   }
+
+  async refreshToken(refresh_token: string): Promise<AuthResponse> {
+    try {
+      const { data } = await axios.post<AuthResponse>(
+        `${API_URL}/api/auth/token`,
+        { refresh_token },
+        { headers: this.headers }
+      );
+      return data;
+    } catch (error: any) {
+      if (error.response) {
+        throw new Error(error.response.data.message || "Token yenilenemedi");
+      }
+      throw new Error("Sunucuya bağlanılamadı");
+    }
+  }
+}
+
+interface LoginResponse {
+  token: string;
+  user: User;
 }
 
 export const authService = new AuthService();

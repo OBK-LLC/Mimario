@@ -19,10 +19,15 @@ export interface User {
   id: string;
   email: string;
   role: string;
-  name: string;
+  name?: string;
+  display_name?: string;
   metadata?: {
     avatar_url?: string;
+    email_verified?: boolean;
+    full_name?: string;
   };
+  created_at?: string;
+  last_sign_in?: string;
 }
 
 export interface AuthResponse {
