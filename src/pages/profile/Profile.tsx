@@ -57,7 +57,7 @@ const Profile: React.FC = () => {
   useEffect(() => {
     if (user) {
       setProfileData({
-        fullName: user.name,
+        fullName: user.display_name || user.name || "",
         email: user.email,
         phoneNumber: "",
       });
@@ -97,7 +97,26 @@ const Profile: React.FC = () => {
   const handleProfileSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      // API call to update profile would go here
+      const response = await fetch(
+        `${
+          process.env.VITE_API_URL || "http://localhost:3000"
+        }/api/auth/update-profile`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            name: profileData.fullName,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Profil güncellenirken bir hata oluştu");
+      }
+
       setProfileMessage({
         text: "Profil başarıyla güncellendi!",
         type: "success",
@@ -191,7 +210,7 @@ const Profile: React.FC = () => {
                   label="İsim Soyisim"
                   name="fullName"
                   value={profileData.fullName}
-                  disabled
+                  onChange={handleProfileChange}
                   variant="outlined"
                 />
               </div>

@@ -131,6 +131,20 @@ function AppContent() {
     }
   };
 
+  // Fetch messages when chat is selected
+  useEffect(() => {
+    if (selectedChatId) {
+      sessionService
+        .getSessionMessages(selectedChatId)
+        .then((response) => {
+          setMessages(response.data || []);
+        })
+        .catch((error) => {
+          console.error("Failed to fetch messages:", error);
+        });
+    }
+  }, [selectedChatId]);
+
   const handleDeleteChat = async (chatId: string) => {
     try {
       await deleteSession(chatId);
@@ -172,13 +186,17 @@ function AppContent() {
       timestamp: Date.now(),
     };
 
-    setMessages((prev) => [...prev, newMessage]);
+    const updatedMessages = [...messages, newMessage];
+    setMessages(updatedMessages);
 
     try {
-      // Burada API'ye mesaj gönderme işlemi yapılacak
+      await sessionService.updateSessionMessages(
+        selectedChatId,
+        updatedMessages
+      );
+
       setIsGenerating(true);
 
-      // Simüle edilmiş AI yanıtı (gerçek API entegrasyonu yapılacak)
       setTimeout(() => {
         const aiResponse: Message = {
           id: uuidv4(),
@@ -189,7 +207,10 @@ function AppContent() {
           timestamp: Date.now(),
         };
 
-        setMessages((prev) => [...prev, aiResponse]);
+        const finalMessages = [...updatedMessages, aiResponse];
+        setMessages(finalMessages);
+        sessionService.updateSessionMessages(selectedChatId, finalMessages);
+
         setIsGenerating(false);
       }, 1000);
     } catch (error) {
