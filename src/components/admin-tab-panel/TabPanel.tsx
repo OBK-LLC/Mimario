@@ -50,7 +50,9 @@ const TabPanel: React.FC<TabPanelProps> = ({ items, defaultTab = 0 }) => {
           aria-labelledby={`tab-${index}`}
           className={styles.tabContent}
         >
-          {activeTab === index && <Box>{item.content}</Box>}
+          {activeTab === index && (
+            <Box sx={{ height: "100%" }}>{item.content}</Box>
+          )}
         </div>
       ))}
     </div>

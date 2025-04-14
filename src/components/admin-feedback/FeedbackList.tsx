@@ -7,6 +7,20 @@ import {
   Rating,
   Chip,
   Pagination,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Box,
+  CircularProgress,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
 } from "@mui/material";
 import {
   Delete as DeleteIcon,
@@ -52,11 +66,15 @@ const mockFeedback = [
   },
 ] as FeedbackData[];
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 
 const FeedbackList: React.FC = () => {
   const [feedback, setFeedback] = useState<FeedbackData[]>(mockFeedback);
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [feedbackToDelete, setFeedbackToDelete] = useState<number | null>(null);
 
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
@@ -65,79 +83,194 @@ const FeedbackList: React.FC = () => {
     setPage(value);
   };
 
-  const handleDelete = (feedbackId: number) => {
-    setFeedback((prevFeedback) =>
-      prevFeedback.filter((item) => item.id !== feedbackId)
-    );
+  const handleDeleteClick = (feedbackId: number) => {
+    setFeedbackToDelete(feedbackId);
+    setDeleteDialogOpen(true);
   };
 
-  const startIndex = (page - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const handleDeleteConfirm = () => {
+    if (feedbackToDelete === null) return;
+
+    setFeedback((prevFeedback) =>
+      prevFeedback.filter((item) => item.id !== feedbackToDelete)
+    );
+    setDeleteDialogOpen(false);
+    setFeedbackToDelete(null);
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <CircularProgress />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert severity="error" className={styles.error}>
+        {error}
+      </Alert>
+    );
+  }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.feedbackList}>
-        {feedback.slice(startIndex, endIndex).map((item) => (
-          <Paper key={item.id} className={styles.feedbackItem}>
-            <div className={styles.feedbackContent}>
-              <div className={styles.feedbackHeader}>
-                {item.isPositive ? (
-                  <Chip
-                    icon={<ThumbUpIcon />}
-                    label="Olumlu"
-                    color="success"
-                    size="small"
-                    className={styles.typeChip}
-                  />
-                ) : (
-                  <Chip
-                    icon={<ThumbDownIcon />}
-                    label="Olumsuz"
-                    color="error"
-                    size="small"
-                    className={styles.typeChip}
-                  />
-                )}
-                <Typography variant="body2" color="textSecondary">
-                  {item.date}
-                </Typography>
-              </div>
-              <div className={styles.ratingContainer}>
-                <Rating value={item.rating} readOnly size="small" />
-                <Typography variant="body2" color="textSecondary">
-                  ({item.rating}/5)
-                </Typography>
-              </div>
-              <Typography variant="body1" className={styles.message}>
-                {item.comment}
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                Gönderen: {item.user}
-              </Typography>
-            </div>
-            <div className={styles.feedbackActions}>
-              <Tooltip title="Sil">
-                <IconButton
-                  size="small"
-                  color="error"
-                  onClick={() => handleDelete(item.id)}
+    <Box className={styles.container}>
+      <Paper elevation={0} className={styles.tableContainer}>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>
+                  <Typography variant="subtitle2" fontWeight={600}>
+                    Geri Bildirim
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="subtitle2" fontWeight={600}>
+                    Kullanıcı
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="subtitle2" fontWeight={600}>
+                    Değerlendirme
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="subtitle2" fontWeight={600}>
+                    Tarih
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="subtitle2" fontWeight={600}>
+                    İşlemler
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {feedback.map((item) => (
+                <TableRow
+                  key={item.id}
+                  sx={{
+                    "&:hover": {
+                      backgroundColor: "action.hover",
+                    },
+                  }}
                 >
-                  <DeleteIcon />
-                </IconButton>
-              </Tooltip>
-            </div>
-          </Paper>
-        ))}
-      </div>
-      <div className={styles.pagination}>
-        <Pagination
-          count={Math.ceil(feedback.length / ITEMS_PER_PAGE)}
-          page={page}
-          onChange={handlePageChange}
-          color="primary"
-        />
-      </div>
-    </div>
+                  <TableCell>
+                    <Box className={styles.feedbackContent}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          mb: 1,
+                        }}
+                      >
+                        <Chip
+                          icon={
+                            item.isPositive ? (
+                              <ThumbUpIcon />
+                            ) : (
+                              <ThumbDownIcon />
+                            )
+                          }
+                          label={item.isPositive ? "Olumlu" : "Olumsuz"}
+                          color={item.isPositive ? "success" : "error"}
+                          size="small"
+                          sx={{ fontWeight: 500 }}
+                        />
+                      </Box>
+                      <Typography variant="body2">{item.comment}</Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">{item.user}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Rating value={item.rating} readOnly size="small" />
+                      <Typography variant="body2" color="text.secondary">
+                        ({item.rating}/5)
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {new Date(item.date).toLocaleDateString("tr-TR")}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <div className={styles.actions}>
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => handleDeleteClick(item.id)}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <div className={styles.pagination}>
+          <Pagination
+            count={Math.ceil(feedback.length / ITEMS_PER_PAGE)}
+            page={page}
+            onChange={handlePageChange}
+            color="primary"
+            size="large"
+            shape="rounded"
+          />
+        </div>
+      </Paper>
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        PaperProps={{
+          elevation: 0,
+          sx: {
+            borderRadius: 2,
+            p: 1,
+          },
+        }}
+      >
+        <DialogTitle>
+          <Typography variant="h6" fontWeight={600}>
+            Geri Bildirimi Sil
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1">
+            Bu geri bildirimi silmek istediğinizden emin misiniz?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setDeleteDialogOpen(false)}
+            sx={{ textTransform: "none" }}
+          >
+            İptal
+          </Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            color="error"
+            variant="contained"
+            sx={{
+              textTransform: "none",
+              fontWeight: 500,
+            }}
+          >
+            Sil
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 };
 

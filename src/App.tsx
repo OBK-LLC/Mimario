@@ -29,6 +29,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { sessionService } from "./services/session/sessionService";
 import { useSession } from "./hooks/useSession";
 import LoadingScreen from "./components/loading-screen/LoadingScreen";
+import { AdminGuard } from "./components/guards/AdminGuard";
 
 const THEME_MODE_KEY = "mimario-theme-mode";
 
@@ -411,10 +412,10 @@ function AppContent() {
             element={
               isLoading ? (
                 <LoadingScreen />
-              ) : user?.role === "admin" ? (
-                <Admin />
               ) : (
-                <Navigate to="/" replace />
+                <AdminGuard>
+                  <Admin />
+                </AdminGuard>
               )
             }
           />

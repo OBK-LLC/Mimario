@@ -1,20 +1,109 @@
 .container {
   width: 100%;
+  background: var(--background-paper);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin: 24px 0;
+  overflow: hidden;
+}
+
+.tableContainer {
+  width: 100%;
+  padding: 16px;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.userInfo span {
+  font-weight: 500;
+  color: var(--text-primary);
 }
 
 .infoItem {
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: #475569;
+  gap: 12px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
 }
 
 .infoItem svg {
-  color: #64748b;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.actions button {
+  padding: 6px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.actions button:hover {
+  background-color: var(--action-hover);
 }
 
 .pagination {
-  margin-top: 24px;
   display: flex;
   justify-content: center;
+  padding: 20px;
+  background: var(--background-paper);
+  border-top: 1px solid var(--divider);
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.error {
+  margin: 16px;
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin: 16px 0;
+    border-radius: 8px;
+  }
+
+  .tableContainer {
+    padding: 12px;
+  }
+
+  .actions {
+    flex-direction: row;
+    gap: 4px;
+  }
+
+  .userInfo {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .actions {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .userInfo {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
 }
