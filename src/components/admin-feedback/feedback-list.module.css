@@ -1,19 +1,73 @@
 .container {
   width: 100%;
   background: var(--background-paper);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   margin: 24px 0;
   overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+
+.container:hover {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
 }
 
 .tableContainer {
   width: 100%;
-  padding: 16px;
+  padding: 20px;
 }
 
-.feedbackContent {
-  max-width: 400px;
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.userInfo > p:first-child {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.userInfo > p:last-child {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.userDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.userDetailRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.userDetailLabel {
+  min-width: 60px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.userDetailValue {
+  color: var(--text-primary);
+}
+
+.messageContent {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+  padding: 8px 0;
+  line-height: 1.5;
+}
+
+.comment {
+  margin-top: 8px;
+  font-style: italic;
 }
 
 .actions {
@@ -23,21 +77,51 @@
 }
 
 .actions button {
-  padding: 6px;
+  padding: 8px;
   border-radius: 8px;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .actions button:hover {
   background-color: var(--action-hover);
+  transform: translateY(-1px);
 }
 
 .pagination {
   display: flex;
   justify-content: center;
-  padding: 20px;
+  padding: 24px;
   background: var(--background-paper);
   border-top: 1px solid var(--divider);
+}
+
+.pageButton {
+  min-width: 32px;
+  height: 32px;
+  border: 1px solid var(--divider);
+  background: transparent;
+  border-radius: 4px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pageButton:hover:not(:disabled) {
+  background: var(--action-hover);
+}
+
+.pageButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.activePage {
+  background: var(--primary-main) !important;
+  color: white !important;
+  border-color: var(--primary-main) !important;
 }
 
 .loadingContainer {
@@ -49,25 +133,85 @@
 
 .error {
   margin: 16px;
+  border-radius: 12px;
+}
+
+.dialogContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 8px;
+}
+
+.infoSection {
+  background: var(--background-default);
   border-radius: 8px;
+  border: 1px solid var(--divider);
+}
+
+.infoHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--background-paper);
+  border-bottom: 1px solid var(--divider);
+  border-radius: 8px 8px 0 0;
+}
+
+.infoHeader svg {
+  color: var(--primary-main);
+  font-size: 20px;
+}
+
+.infoContent {
+  padding: 16px;
+  color: var(--text-secondary);
+}
+
+.infoContent p {
+  margin: 4px 0;
+  line-height: 1.6;
+}
+
+.subtitle {
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  color: var(--text-primary);
+  margin-bottom: 16px !important;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--divider);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.content {
+  color: var(--text-secondary);
+  padding: 0 4px;
+}
+
+.content p {
+  margin: 8px 0;
+  line-height: 1.6;
 }
 
 @media (max-width: 768px) {
   .container {
     margin: 16px 0;
-    border-radius: 8px;
+    border-radius: 12px;
   }
 
   .tableContainer {
-    padding: 12px;
+    padding: 16px;
   }
 
-  .feedbackContent {
-    max-width: 300px;
+  .messageContent {
+    max-width: 200px;
   }
 
   .actions {
-    flex-direction: row;
+    flex-direction: column;
     gap: 4px;
   }
 }
@@ -78,7 +222,7 @@
     gap: 4px;
   }
 
-  .feedbackContent {
+  .messageContent {
     max-width: 200px;
   }
 }

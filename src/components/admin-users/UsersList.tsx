@@ -185,9 +185,14 @@ const UsersList: React.FC = () => {
                     >
                       {user.name?.charAt(0)}
                     </Avatar>
-                    <Typography variant="body2" fontWeight={500}>
-                      {user.display_name || user.name}
-                    </Typography>
+                    <div>
+                      <Typography variant="body2" fontWeight={500}>
+                        {user.display_name || user.name}
+                      </Typography>
+                      <Typography variant="caption" color="textSecondary">
+                        ID: {user.id}
+                      </Typography>
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell>

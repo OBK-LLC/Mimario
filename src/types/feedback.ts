@@ -1,3 +1,5 @@
+import { User } from "./auth";
+
 export type FeedbackRating = "positive" | "negative" | "neutral";
 
 export interface TargetMessage {
@@ -25,4 +27,24 @@ export interface FeedbackResponse {
     comment?: string;
     createdAt: number;
   };
+}
+
+// Admin panel için response tipleri
+export interface AdminFeedback {
+  id: string;
+  sessionId: string;
+  messageId: string;
+  rating: FeedbackRating;
+  comment?: string;
+  targetMessage: TargetMessage;
+  createdAt: string;
+  userId?: string;
+  user?: User;
+}
+
+export interface AdminFeedbackListResponse {
+  feedbacks: AdminFeedback[];
+  total: number;
+  page: number;
+  limit: number;
 }
