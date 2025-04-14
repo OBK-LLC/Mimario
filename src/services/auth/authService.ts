@@ -40,7 +40,7 @@ class AuthService {
         {
           email,
           password,
-          display_name: metadata?.full_name,
+          name: metadata?.full_name,
         },
         { headers: this.headers }
       );

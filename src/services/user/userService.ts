@@ -106,6 +106,36 @@ export const userService = {
       throw new Error(error.response?.data?.message || "Kullanıcı silinemedi");
     }
   },
+
+  async updateProfile(data: {
+    display_name?: string;
+    email?: string;
+    phone?: string;
+  }): Promise<User> {
+    const tokens = tokenStorage.getTokens();
+    if (!tokens?.token) {
+      throw new Error("No token found");
+    }
+
+    try {
+      const response = await axios.put<User>(
+        `${API_URL}/api/user/profile`,
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${tokens.token}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      if (error.response) {
+        throw new Error(error.response.data.message || "Profil güncellenemedi");
+      }
+      throw new Error("Sunucuya bağlanılamadı");
+    }
+  },
 };
 
 export default userService;
