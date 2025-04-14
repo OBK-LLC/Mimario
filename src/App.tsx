@@ -28,6 +28,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { sessionService } from "./services/session/sessionService";
 import { useSession } from "./hooks/useSession";
+import LoadingScreen from "./components/loading-screen/LoadingScreen";
 
 const THEME_MODE_KEY = "mimario-theme-mode";
 
@@ -263,32 +264,38 @@ function AppContent() {
           <Route
             path="/"
             element={
-              <motion.div
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                variants={pageVariants}
-                style={{ width: "100%", height: "100vh" }}
-              >
-                <Home
-                  chatHistories={chatHistories}
-                  onStartChat={handleNewChat}
-                  onSelectChat={handleSelectChat}
-                  onDeleteChat={handleDeleteChat}
-                  onEditChatTitle={handleEditChatTitle}
-                  isLoggedIn={!!user}
-                  onLogout={handleLogout}
-                  mode={mode}
-                  toggleColorMode={toggleColorMode}
-                />
-              </motion.div>
+              isLoading ? (
+                <LoadingScreen />
+              ) : (
+                <motion.div
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  variants={pageVariants}
+                  style={{ width: "100%", height: "100vh" }}
+                >
+                  <Home
+                    chatHistories={chatHistories}
+                    onStartChat={handleNewChat}
+                    onSelectChat={handleSelectChat}
+                    onDeleteChat={handleDeleteChat}
+                    onEditChatTitle={handleEditChatTitle}
+                    isLoggedIn={!!user}
+                    onLogout={handleLogout}
+                    mode={mode}
+                    toggleColorMode={toggleColorMode}
+                  />
+                </motion.div>
+              )
             }
           />
 
           <Route
             path="/chat/:chatId"
             element={
-              user ? (
+              isLoading ? (
+                <LoadingScreen />
+              ) : user ? (
                 <motion.div
                   initial="initial"
                   animate="animate"
@@ -307,7 +314,9 @@ function AppContent() {
           <Route
             path="/profile"
             element={
-              user ? (
+              isLoading ? (
+                <LoadingScreen />
+              ) : user ? (
                 <motion.div
                   initial="initial"
                   animate="animate"
@@ -326,7 +335,9 @@ function AppContent() {
           <Route
             path="/login"
             element={
-              !user ? (
+              isLoading ? (
+                <LoadingScreen />
+              ) : !user ? (
                 <motion.div
                   initial="initial"
                   animate="animate"
@@ -345,7 +356,9 @@ function AppContent() {
           <Route
             path="/signup"
             element={
-              !user ? (
+              isLoading ? (
+                <LoadingScreen />
+              ) : !user ? (
                 <motion.div
                   initial="initial"
                   animate="animate"
@@ -364,7 +377,9 @@ function AppContent() {
           <Route
             path="/forgot-password"
             element={
-              !user ? (
+              isLoading ? (
+                <LoadingScreen />
+              ) : !user ? (
                 <motion.div
                   initial="initial"
                   animate="animate"
@@ -383,7 +398,9 @@ function AppContent() {
           <Route
             path="/verification"
             element={
-              !user ? (
+              isLoading ? (
+                <LoadingScreen />
+              ) : !user ? (
                 <motion.div
                   initial="initial"
                   animate="animate"
@@ -402,22 +419,32 @@ function AppContent() {
           <Route
             path="/admin"
             element={
-              user?.role === "admin" ? <Admin /> : <Navigate to="/" replace />
+              isLoading ? (
+                <LoadingScreen />
+              ) : user?.role === "admin" ? (
+                <Admin />
+              ) : (
+                <Navigate to="/" replace />
+              )
             }
           />
 
           <Route
             path="/auth/callback"
             element={
-              <motion.div
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                variants={pageVariants}
-                style={{ width: "100%", height: "100vh" }}
-              >
-                <AuthCallback />
-              </motion.div>
+              isLoading ? (
+                <LoadingScreen />
+              ) : (
+                <motion.div
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  variants={pageVariants}
+                  style={{ width: "100%", height: "100vh" }}
+                >
+                  <AuthCallback />
+                </motion.div>
+              )
             }
           />
 

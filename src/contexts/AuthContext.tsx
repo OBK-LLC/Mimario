@@ -90,9 +90,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         return;
       }
 
-      const currentUser = await authService.getCurrentUser();
-      setUser(currentUser);
-      setToken(tokens.token);
+      try {
+        const currentUser = await authService.getCurrentUser();
+        setUser(currentUser);
+        setToken(tokens.token);
+      } catch (error) {
+        // Token geçersiz olabilir, refresh token ile yeni token almayı deneyelim
+        if (tokens.refresh_token) {
+          try {
+            const response = await authService.refreshToken(
+              tokens.refresh_token
+            );
+            tokenStorage.setTokens(response.token, response.refresh_token);
+            setToken(response.token);
+            const currentUser = await authService.getCurrentUser();
+            setUser(currentUser);
+          } catch (refreshError) {
+            // Refresh token da geçersizse çıkış yap
+            console.error("Token refresh error:", refreshError);
+            setUser(null);
+            setToken(null);
+            tokenStorage.clearTokens();
+          }
+        } else {
+          // Refresh token yoksa çıkış yap
+          setUser(null);
+          setToken(null);
+          tokenStorage.clearTokens();
+        }
+      }
     } catch (error) {
       console.error("Error checking user:", error);
       setUser(null);

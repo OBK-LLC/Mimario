@@ -21,6 +21,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const theme = useTheme();
   const { user } = useAuth();
 
+  console.log("ChatContainer user:", user);
+
   const capitalize = (str: string) => {
     if (!str) return str;
     return str.charAt(0).toUpperCase() + str.slice(1);
@@ -89,8 +91,11 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                   mb: 3,
                 }}
               >
-                Merhaba{user?.name ? ` ${capitalize(user.name)}` : ""}, ben
-                Mimario!
+                {`Merhaba${
+                  user?.name && typeof user.name === "string"
+                    ? ` ${capitalize(user.name)}`
+                    : ""
+                }! Ben Mimario!`}
               </Typography>
               <Typography
                 variant="body1"
@@ -105,9 +110,9 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                   lineHeight: 1.8,
                 }}
               >
-                Mimari mevzuatlar ve teknik konularda size yardımcı olmak için
-                buradayım. Aşağıdaki örnek sorulardan birini seçebilir veya
-                kendi sorunuzu yazabilirsiniz.
+                Mimari mevzuatlar, yönetmelikler ve teknik konularda size
+                yardımcı olmak için buradayım. Aşağıdaki örnek sorulardan birini
+                seçebilir veya kendi sorunuzu sorabilirsiniz.
               </Typography>
               <Box maxWidth={600} mx="auto" sx={{ width: "100%" }}>
                 {exampleQuestions.map((question, index) => (

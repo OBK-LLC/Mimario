@@ -108,7 +108,7 @@ const Profile: React.FC = () => {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({
-            name: profileData.fullName,
+            display_name: profileData.fullName,
           }),
         }
       );

@@ -37,7 +37,11 @@ class AuthService {
     try {
       const response = await axios.post<LoginResponse>(
         `${API_URL}/api/auth/register`,
-        { email, password, ...metadata },
+        {
+          email,
+          password,
+          display_name: metadata?.full_name,
+        },
         { headers: this.headers }
       );
       return response.data;
@@ -68,8 +72,8 @@ class AuthService {
   }
 
   async getCurrentUser(): Promise<User> {
-    const token = localStorage.getItem("token");
-    if (!token) {
+    const tokens = tokenStorage.getTokens();
+    if (!tokens?.token) {
       throw new Error("No token found");
     }
 
@@ -79,15 +83,13 @@ class AuthService {
         {
           headers: {
             ...this.headers,
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${tokens.token}`,
           },
         }
       );
       return {
         ...data,
-        name: data.name || data.metadata?.full_name || "",
-        display_name:
-          data.display_name || data.name || data.metadata?.full_name || "",
+        display_name: data.display_name || data.name || "",
       };
     } catch (error: any) {
       if (error.response) {
@@ -221,6 +223,22 @@ class AuthService {
         throw new Error(data.error || "Google ile giriş başarısız");
       }
       throw error;
+    }
+  }
+
+  async refreshToken(refresh_token: string): Promise<AuthResponse> {
+    try {
+      const { data } = await axios.post<AuthResponse>(
+        `${API_URL}/api/auth/token`,
+        { refresh_token },
+        { headers: this.headers }
+      );
+      return data;
+    } catch (error: any) {
+      if (error.response) {
+        throw new Error(error.response.data.message || "Token yenilenemedi");
+      }
+      throw new Error("Sunucuya bağlanılamadı");
     }
   }
 }
