@@ -7,39 +7,78 @@ import {
   Button,
   TextField,
   Box,
-  Rating,
   Typography,
 } from "@mui/material";
 import { ThumbUp, ThumbDown } from "@mui/icons-material";
+import { feedbackService } from "../../services/feedback/feedbackService";
+import { FeedbackRating } from "../../types/feedback";
+import { showToast } from "../../utils/toast";
 import styles from "./feedback-modal.module.css";
 
 interface FeedbackModalProps {
   open: boolean;
   onClose: () => void;
   isPositive: boolean;
-  onSubmit: (feedback: { rating: number; comment: string }) => void;
+  sessionId: string;
+  messageId: string;
+  messageContent: string;
+  messageRole: string;
+  previousMessageId?: string;
+  previousMessageContent?: string;
 }
 
 const FeedbackModal: React.FC<FeedbackModalProps> = ({
   open,
   onClose,
   isPositive,
-  onSubmit,
+  sessionId,
+  messageId,
+  messageContent,
+  messageRole,
+  previousMessageId,
+  previousMessageContent,
 }) => {
-  const [rating, setRating] = useState<number | null>(null);
   const [comment, setComment] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = () => {
-    if (rating) {
-      onSubmit({ rating, comment });
-      onClose();
-      setRating(null);
-      setComment("");
+  const handleSubmit = async () => {
+    try {
+      setIsSubmitting(true);
+      const rating: FeedbackRating = isPositive ? "positive" : "negative";
+
+      const response = await feedbackService.submitFeedback({
+        sessionId,
+        messageId,
+        rating,
+        comment: comment.trim() || undefined,
+        targetMessage: {
+          id: messageId,
+          content: messageContent,
+          role: messageRole,
+        },
+      });
+
+      if (response.success) {
+        showToast.success("Geribildiriminiz için teşekkürler!");
+        handleClose();
+      } else {
+        showToast.error("Geribildirim gönderilemedi. Lütfen tekrar deneyin.");
+      }
+    } catch (error) {
+      console.error("Feedback error:", error);
+      showToast.error("Geribildirim gönderilirken bir hata oluştu.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  const handleClose = () => {
+    setComment("");
+    onClose();
+  };
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
       <DialogTitle className={styles.dialogTitle}>
         <Box className={styles.titleContainer}>
           {isPositive ? (
@@ -54,15 +93,6 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
       </DialogTitle>
       <DialogContent>
         <Box className={styles.contentBox}>
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            Lütfen yanıtı değerlendirin
-          </Typography>
-          <Rating
-            value={rating}
-            onChange={(_, newValue) => setRating(newValue)}
-            size="large"
-            className={styles.rating}
-          />
           <TextField
             multiline
             rows={4}
@@ -71,15 +101,24 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             className={styles.textField}
+            disabled={isSubmitting}
           />
         </Box>
       </DialogContent>
       <DialogActions className={styles.actions}>
-        <Button onClick={onClose} variant="outlined">
+        <Button
+          onClick={handleClose}
+          variant="outlined"
+          disabled={isSubmitting}
+        >
           İptal
         </Button>
-        <Button onClick={handleSubmit} variant="contained" disabled={!rating}>
-          Gönder
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Gönderiliyor..." : "Gönder"}
         </Button>
       </DialogActions>
     </Dialog>

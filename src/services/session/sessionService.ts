@@ -1,18 +1,14 @@
 import axios from "axios";
 import { Session, ApiResponse } from "../../types/session";
+import { tokenStorage } from "../../utils/tokenStorage";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 class SessionService {
-  private token: string;
-
-  constructor() {
-    this.token = localStorage.getItem("token") || "";
-  }
-
   private get headers() {
+    const tokens = tokenStorage.getTokens();
     return {
-      Authorization: `Bearer ${this.token}`,
+      Authorization: tokens?.token ? `Bearer ${tokens.token}` : "",
       "Content-Type": "application/json",
     };
   }
@@ -73,10 +69,6 @@ class SessionService {
       { headers: this.headers }
     );
     return response.data;
-  }
-
-  setToken(token: string) {
-    this.token = token;
   }
 }
 

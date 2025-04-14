@@ -36,17 +36,22 @@ function getStorageKey(userId: string) {
   return `mimario-chat-histories-${userId}`;
 }
 
-function ChatWrapper(props: any) {
+function ChatWrapper({ selectedChatId, onSelectChat, ...props }: any) {
   const { chatId } = useParams();
 
   useEffect(() => {
-    // Ensure chat selection is in sync with URL parameter
-    if (chatId && chatId !== props.selectedChatId) {
-      props.onSelectChat(chatId);
+    if (chatId && chatId !== selectedChatId) {
+      onSelectChat(chatId);
     }
-  }, [chatId, props.selectedChatId, props.onSelectChat]);
+  }, [chatId, selectedChatId, onSelectChat]);
 
-  return <Chat {...props} />;
+  return (
+    <Chat
+      selectedChatId={selectedChatId}
+      onSelectChat={onSelectChat}
+      {...props}
+    />
+  );
 }
 
 function AppContent() {
@@ -113,10 +118,11 @@ function AppContent() {
       const response = await createSession(name, {
         topic: name,
       });
-      if (response) {
-        setSelectedChatId(response.id);
-        setMessages(response.messages || []);
-        navigate(`/chat/${response.id}`);
+
+      if (response && response.data) {
+        setSelectedChatId(response.data.id);
+        setMessages(response.data.messages || []);
+        navigate(`/chat/${response.data.id}`);
       }
     } catch (error) {
       console.error("Chat creation failed:", error);
@@ -132,7 +138,6 @@ function AppContent() {
     }
   };
 
-  // Fetch messages when chat is selected
   useEffect(() => {
     if (selectedChatId) {
       sessionService
@@ -169,8 +174,6 @@ function AppContent() {
   const handleEditChatTitle = async (chatId: string, newTitle: string) => {
     try {
       await updateSession(chatId, newTitle);
-      // Başlık değişikliğini yerel state'te güncellemeye gerek yok
-      // useSession hook'u otomatik olarak güncelleyecek
     } catch (error) {
       console.error("Chat update failed:", error);
     }
@@ -218,19 +221,6 @@ function AppContent() {
       console.error("Message sending failed:", error);
       setIsGenerating(false);
     }
-  };
-
-  const handleLogin = () => {
-    // This function is no longer used in the new implementation
-  };
-
-  const handleSignup = () => {
-    // This function is no longer used in the new implementation
-  };
-
-  const handlePasswordReset = (email: string) => {
-    console.log(`Şifre sıfırlama bağlantısı gönderildi: ${email}`);
-    // Normalde burada backend'e istek gönderilecek
   };
 
   const handleLogout = async () => {

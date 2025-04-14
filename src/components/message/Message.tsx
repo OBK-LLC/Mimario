@@ -6,7 +6,11 @@ import { useTheme } from "@mui/material/styles";
 import styles from "./message.module.css";
 import FeedbackModal from "../feedback-modal/FeedbackModal";
 
-export const Message: React.FC<MessageProps> = ({ message }) => {
+export const Message: React.FC<MessageProps> = ({
+  message,
+  previousMessage,
+  sessionId,
+}) => {
   const isAI = message.sender === "ai";
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === "dark";
@@ -20,13 +24,6 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
   const handleFeedback = (isPositive: boolean) => {
     setIsPositiveFeedback(isPositive);
     setFeedbackModalOpen(true);
-  };
-
-  const handleFeedbackSubmit = (feedback: {
-    rating: number;
-    comment: string;
-  }) => {
-    console.log("Feedback:", { messageId: message.id, ...feedback });
   };
 
   return (
@@ -98,7 +95,12 @@ export const Message: React.FC<MessageProps> = ({ message }) => {
         open={feedbackModalOpen}
         onClose={() => setFeedbackModalOpen(false)}
         isPositive={isPositiveFeedback}
-        onSubmit={handleFeedbackSubmit}
+        sessionId={sessionId}
+        messageId={message.id}
+        messageContent={message.content}
+        messageRole={message.sender}
+        previousMessageId={previousMessage?.id}
+        previousMessageContent={previousMessage?.content}
       />
     </Box>
   );

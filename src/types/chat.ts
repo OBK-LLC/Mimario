@@ -15,12 +15,15 @@ export interface ChatInputProps {
 
 export interface MessageProps {
   message: Message;
+  previousMessage?: Message;
+  sessionId: string;
 }
 
 export interface ChatContainerProps {
   messages: Message[];
   onSendMessage: (message: string) => void;
   isGenerating?: boolean;
+  sessionId: string;
 }
 
 export interface SidebarProps {

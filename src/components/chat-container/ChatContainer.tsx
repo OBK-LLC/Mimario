@@ -16,6 +16,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   messages,
   onSendMessage,
   isGenerating,
+  sessionId,
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const theme = useTheme();
@@ -150,7 +151,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
           </Box>
         )}
         <AnimatePresence initial={false}>
-          {messages.map((message) => (
+          {messages.map((message, index) => (
             <motion.div
               key={message.id}
               initial={{ opacity: 0, y: 20 }}
@@ -161,7 +162,11 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                 ease: "easeOut",
               }}
             >
-              <Message message={message} />
+              <Message
+                message={message}
+                previousMessage={index > 0 ? messages[index - 1] : undefined}
+                sessionId={sessionId}
+              />
             </motion.div>
           ))}
           {isGenerating && (
