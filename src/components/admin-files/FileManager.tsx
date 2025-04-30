@@ -1,11 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Typography,
   Button,
   IconButton,
   Paper,
-  Tooltip,
-  Pagination,
   Table,
   TableBody,
   TableCell,
@@ -13,12 +11,12 @@ import {
   TableHead,
   TableRow,
   Box,
-  CircularProgress,
-  Alert,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
+  Pagination,
+  CircularProgress,
 } from "@mui/material";
 import {
   Upload as UploadIcon,
@@ -29,98 +27,65 @@ import {
   PictureAsPdf as PdfIcon,
 } from "@mui/icons-material";
 import styles from "./file-manager.module.css";
+import { FileService, FileResponse } from "../../services/file/fileService";
+import { showToast } from "../../utils/toast";
 
-interface FileData {
-  id: number;
-  name: string;
-  type: string;
-  size: string;
-  uploadDate: string;
-  uploadedBy: string;
+interface FileData extends FileResponse {
   downloads: number;
 }
-
-const mockFiles = [
-  {
-    id: 1,
-    name: "Proje Raporu.pdf",
-    type: "pdf",
-    size: "2.5 MB",
-    uploadDate: "2024-01-20",
-    uploadedBy: "Ahmet Yılmaz",
-    downloads: 15,
-  },
-  {
-    id: 2,
-    name: "Görsel.jpg",
-    type: "image",
-    size: "1.8 MB",
-    uploadDate: "2024-01-19",
-    uploadedBy: "Ayşe Kaya",
-    downloads: 5,
-  },
-  {
-    id: 3,
-    name: "Rapor.docx",
-    type: "document",
-    size: "500 KB",
-    uploadDate: "2024-01-18",
-    uploadedBy: "Mehmet Demir",
-    downloads: 2,
-  },
-];
 
 const ITEMS_PER_PAGE = 10;
 
 const FileManager: React.FC = () => {
-  const [files, setFiles] = useState<FileData[]>(mockFiles);
+  const [files, setFiles] = useState<FileData[]>([]);
   const [page, setPage] = useState(1);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [fileToDelete, setFileToDelete] = useState<number | null>(null);
+  const [fileToDelete, setFileToDelete] = useState<string | null>(null);
 
-  const handlePageChange = (
-    event: React.ChangeEvent<unknown>,
-    value: number
-  ) => {
-    setPage(value);
-  };
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      const fileData: FileData = {
-        id: Date.now(),
-        name: file.name,
-        type: file.type.split("/")[1] || "document",
-        size: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
-        uploadDate: new Date().toISOString().split("T")[0],
-        uploadedBy: "Aktif Kullanıcı",
-        downloads: 0,
-      };
-      setFiles((prevFiles) => [...prevFiles, fileData]);
+  const fetchDocuments = async () => {
+    try {
+      setLoading(true);
+      const documents = await FileService.getDocuments();
+      setFiles(
+        documents.map((doc) => ({
+          ...doc,
+          downloads: 0,
+          size: doc.size || 0,
+        }))
+      );
+    } catch (error) {
+      showToast.error(
+        error instanceof Error ? error.message : "Dosyalar yüklenirken bir hata oluştu"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDeleteClick = (fileId: number) => {
-    setFileToDelete(fileId);
-    setDeleteDialogOpen(true);
+  useEffect(() => {
+    fetchDocuments();
+  }, []);
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files?.length) return;
+
+    try {
+      setLoading(true);
+      await FileService.uploadFiles(Array.from(files));
+      await fetchDocuments();
+      showToast.success("Dosya başarıyla yüklendi");
+    } catch (error) {
+      showToast.error(
+        error instanceof Error ? error.message : "Dosya yüklenirken bir hata oluştu"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDeleteConfirm = () => {
-    if (fileToDelete === null) return;
-
-    setFiles((prevFiles) =>
-      prevFiles.filter((file) => file.id !== fileToDelete)
-    );
-    setDeleteDialogOpen(false);
-    setFileToDelete(null);
-  };
-
-  const handleFileDownload = (fileId: number) => {
+  const handleFileDownload = (fileId: string) => {
     setFiles((prevFiles) =>
       prevFiles.map((file) =>
         file.id === fileId ? { ...file, downloads: file.downloads + 1 } : file
@@ -128,30 +93,68 @@ const FileManager: React.FC = () => {
     );
   };
 
-  const getFileIcon = (type: string) => {
+  const handleDeleteClick = (fileId: string) => {
+    setFileToDelete(fileId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!fileToDelete) return;
+
+    try {
+      setLoading(true);
+      await FileService.deleteDocument(fileToDelete);
+      setFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileToDelete));
+      setDeleteDialogOpen(false);
+      setFileToDelete(null);
+      showToast.success("Dosya başarıyla silindi");
+    } catch (error) {
+      showToast.error(
+        error instanceof Error ? error.message : "Dosya silinirken bir hata oluştu"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value);
+  };
+
+  const getFileIcon = (fileType: string | undefined) => {
+    if (!fileType) return <DocumentIcon fontSize="small" />;
+
+    const type = fileType.toLowerCase();
     switch (type) {
       case "pdf":
         return <PdfIcon fontSize="small" />;
-      case "image":
+      case "jpg":
+      case "jpeg":
+      case "png":
+      case "gif":
         return <ImageIcon fontSize="small" />;
       default:
         return <DocumentIcon fontSize="small" />;
     }
   };
 
+  const formatFileSize = (bytes: number): string => {
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+    if (bytes === 0) return "0 Byte";
+    const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)).toString());
+    return Math.round(bytes / Math.pow(1024, i)) + " " + sizes[i];
+  };
+
+  const paginatedFiles = files.slice(
+    (page - 1) * ITEMS_PER_PAGE,
+    page * ITEMS_PER_PAGE
+  );
+
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
         <CircularProgress />
       </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <Alert severity="error" className={styles.error}>
-        {error}
-      </Alert>
     );
   }
 
@@ -169,13 +172,14 @@ const FileManager: React.FC = () => {
             }}
           >
             Dosya Yükle
-            <input type="file" hidden onChange={handleFileUpload} />
+            <input
+              type="file"
+              hidden
+              onChange={handleFileUpload}
+              multiple
+              accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+            />
           </Button>
-          {selectedFile && (
-            <Typography variant="body2" color="text.secondary">
-              Seçilen dosya: {selectedFile.name}
-            </Typography>
-          )}
         </Box>
 
         <TableContainer>
@@ -194,15 +198,10 @@ const FileManager: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   <Typography variant="subtitle2" fontWeight={600}>
-                    Yükleyen
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="subtitle2" fontWeight={600}>
                     Tarih
                   </Typography>
                 </TableCell>
-                <TableCell>
+                <TableCell align="right">
                   <Typography variant="subtitle2" fontWeight={600}>
                     İşlemler
                   </Typography>
@@ -210,7 +209,7 @@ const FileManager: React.FC = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {files.map((file) => (
+              {paginatedFiles.map((file) => (
                 <TableRow
                   key={file.id}
                   sx={{
@@ -226,17 +225,16 @@ const FileManager: React.FC = () => {
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="body2">{file.size}</Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">{file.uploadedBy}</Typography>
+                    <Typography variant="body2">
+                      {formatFileSize(file.size)}
+                    </Typography>
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">
                       {new Date(file.uploadDate).toLocaleDateString("tr-TR")}
                     </Typography>
                   </TableCell>
-                  <TableCell>
+                  <TableCell align="right">
                     <div className={styles.actions}>
                       <IconButton
                         size="small"
@@ -259,16 +257,18 @@ const FileManager: React.FC = () => {
             </TableBody>
           </Table>
         </TableContainer>
-        <div className={styles.pagination}>
-          <Pagination
-            count={Math.ceil(files.length / ITEMS_PER_PAGE)}
-            page={page}
-            onChange={handlePageChange}
-            color="primary"
-            size="large"
-            shape="rounded"
-          />
-        </div>
+
+        {files.length > 0 && (
+          <div className={styles.pagination}>
+            <Pagination
+              count={Math.ceil(files.length / ITEMS_PER_PAGE)}
+              page={page}
+              onChange={(_, value) => setPage(value)}
+              color="primary"
+              shape="rounded"
+            />
+          </div>
+        )}
       </Paper>
 
       <Dialog
@@ -276,10 +276,7 @@ const FileManager: React.FC = () => {
         onClose={() => setDeleteDialogOpen(false)}
         PaperProps={{
           elevation: 0,
-          sx: {
-            borderRadius: 2,
-            p: 1,
-          },
+          sx: { borderRadius: 2, p: 1 },
         }}
       >
         <DialogTitle>
@@ -303,10 +300,7 @@ const FileManager: React.FC = () => {
             onClick={handleDeleteConfirm}
             color="error"
             variant="contained"
-            sx={{
-              textTransform: "none",
-              fontWeight: 500,
-            }}
+            sx={{ textTransform: "none", fontWeight: 500 }}
           >
             Sil
           </Button>

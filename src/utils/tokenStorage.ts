@@ -35,4 +35,9 @@ export const tokenStorage = {
   hasTokens(): boolean {
     return !!this.getTokens();
   },
+
+  getToken(): string | null {
+    const tokens = this.getTokens();
+    return tokens?.token || null;
+  },
 };

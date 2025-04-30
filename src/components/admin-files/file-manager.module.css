@@ -5,6 +5,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   margin: 24px 0;
   overflow: hidden;
+  position: relative;
 }
 
 .tableContainer {
@@ -39,8 +40,8 @@
 .pagination {
   display: flex;
   justify-content: center;
-  padding: 20px;
-  background: var(--background-paper);
+  padding: 16px;
+  background-color: var(--background-default);
   border-top: 1px solid var(--divider);
 }
 
