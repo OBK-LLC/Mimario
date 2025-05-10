@@ -145,13 +145,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         password
       )) as AuthResponse;
 
-      // Email doğrulaması kontrolü
-      if (!response.user.metadata?.email_verified) {
-        // Token'ı geçici olarak saklayalım ki verification sayfasında kullanabilelim
-        tokenStorage.setTokens(response.token, response.refresh_token);
-        navigate("/verification");
-        throw new Error("Lütfen e-posta adresinizi doğrulayın.");
-      }
 
       tokenStorage.setTokens(response.token, response.refresh_token);
       setToken(response.token);
