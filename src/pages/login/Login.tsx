@@ -8,6 +8,8 @@ import {
   InputAdornment,
   IconButton,
   Link as MuiLink,
+  Alert,
+  CircularProgress,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
@@ -32,13 +34,18 @@ const validationSchema = yup.object().shape({
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as any)?.from?.pathname || "/";
 
   const {
     control,
     handleSubmit,
     formState: { errors },
+    setError,
   } = useForm<LoginFormData>({
     resolver: yupResolver(validationSchema),
     defaultValues: {
@@ -49,12 +56,29 @@ const Login = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
+      setIsSubmitting(true);
+      setLoginError(null);
       await login(data.email, data.password);
       toast.success("Başarıyla giriş yaptınız!");
-      navigate("/");
+      navigate(from, { replace: true });
     } catch (error: any) {
       console.error("Login error:", error);
-      toast.error(error.message || "Giriş yapılırken bir hata oluştu");
+      
+      // API'den gelen özel hata durumları
+      if (error.message.includes("E-posta adresi veya şifre hatalı")) {
+        setLoginError("E-posta adresi veya şifre hatalı");
+        setError("password", { message: "Şifrenizi kontrol edin" });
+      } else if (error.message.includes("hesap kilitlendi")) {
+        setLoginError("Çok fazla başarısız giriş denemesi. Lütfen bir süre bekleyin.");
+      } else if (error.message.includes("doğrulanmamış")) {
+        setLoginError("E-posta adresinizi doğrulamanız gerekiyor. Lütfen e-postanızı kontrol edin.");
+      } else {
+        setLoginError(error.message || "Giriş yapılırken bir hata oluştu");
+      }
+      
+      toast.error(error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -70,6 +94,12 @@ const Login = () => {
           </Typography>
         </div>
 
+        {loginError && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {loginError}
+          </Alert>
+        )}
+
         <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
           <div className={styles.formField}>
             <Controller
@@ -84,6 +114,8 @@ const Login = () => {
                   error={!!errors.email}
                   helperText={errors.email?.message}
                   variant="outlined"
+                  disabled={isSubmitting}
+                  autoComplete="email"
                 />
               )}
             />
@@ -102,12 +134,15 @@ const Login = () => {
                   error={!!errors.password}
                   helperText={errors.password?.message}
                   variant="outlined"
+                  disabled={isSubmitting}
+                  autoComplete="current-password"
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
                           onClick={() => setShowPassword(!showPassword)}
                           edge="end"
+                          disabled={isSubmitting}
                         >
                           {showPassword ? <VisibilityOff /> : <Visibility />}
                         </IconButton>
@@ -124,6 +159,7 @@ const Login = () => {
               component={Link}
               to="/forgot-password"
               className={styles.link}
+              tabIndex={isSubmitting ? -1 : 0}
             >
               Şifremi unuttum
             </MuiLink>
@@ -136,8 +172,16 @@ const Login = () => {
               color="primary"
               className={styles.submitButton}
               fullWidth
+              disabled={isSubmitting}
             >
-              Giriş Yap
+              {isSubmitting ? (
+                <>
+                  <CircularProgress size={20} sx={{ mr: 1 }} />
+                  Giriş Yapılıyor...
+                </>
+              ) : (
+                "Giriş Yap"
+              )}
             </Button>
           </div>
         </form>
@@ -145,7 +189,12 @@ const Login = () => {
         <div className={styles.footer}>
           <Typography variant="body2">
             Hesabınız yok mu?{" "}
-            <MuiLink component={Link} to="/signup" className={styles.link}>
+            <MuiLink 
+              component={Link} 
+              to="/signup" 
+              className={styles.link}
+              tabIndex={isSubmitting ? -1 : 0}
+            >
               Kayıt Olun
             </MuiLink>
           </Typography>
