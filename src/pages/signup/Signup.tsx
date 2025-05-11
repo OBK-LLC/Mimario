@@ -10,7 +10,7 @@ import {
   FormControlLabel,
   Checkbox,
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useForm, Controller, Resolver } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -18,6 +18,7 @@ import * as yup from "yup";
 import { useAuth } from "../../contexts/AuthContext";
 import styles from "./signup.module.css";
 import { SignupFormData } from "../../types/auth";
+import { toast } from "react-toastify";
 
 const validationSchema: yup.ObjectSchema<SignupFormData> = yup.object().shape({
   fullName: yup.string().required("Ad ve soyadınızı girin"),
@@ -45,6 +46,7 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { register } = useAuth();
+  const navigate = useNavigate();
 
   const {
     control,
@@ -64,8 +66,11 @@ const Signup = () => {
   const onSubmit = async (data: SignupFormData) => {
     try {
       await register(data.email, data.password, { full_name: data.fullName });
-    } catch (error) {
+      toast.success("Kayıt işlemi başarılı! Hoş geldiniz.");
+      navigate("/");
+    } catch (error: any) {
       console.error("Registration error:", error);
+      toast.error(error.message || "Kayıt olurken bir hata oluştu");
     }
   };
 

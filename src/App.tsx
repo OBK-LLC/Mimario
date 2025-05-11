@@ -22,9 +22,7 @@ import Signup from "./pages/signup/Signup";
 import ForgotPassword from "./pages/forgot-password/ForgotPassword";
 import Profile from "./pages/profile/Profile";
 import Admin from "./pages/admin/Admin";
-import AuthCallback from "./components/auth/AuthCallback";
-import Verification from "./pages/verification/Verification";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { sessionService } from "./services/session/sessionService";
 import { useSession } from "./hooks/useSession";
@@ -191,35 +189,28 @@ function AppContent() {
       timestamp: Date.now(),
     };
 
-    const updatedMessages = [...messages, newMessage];
-    setMessages(updatedMessages);
+    setMessages(prev => [...prev, newMessage]);
+    setIsGenerating(true);
 
     try {
-      await sessionService.updateSessionMessages(
-        selectedChatId,
-        updatedMessages
-      );
-
-      setIsGenerating(true);
-
-      setTimeout(() => {
+      const response = await sessionService.updateSessionMessages(selectedChatId, content);
+      
+      if (response.success && response.data) {
         const aiResponse: Message = {
           id: uuidv4(),
-          content:
-            "Bu bir örnek AI yanıtıdır. API entegrasyonu henüz yapılmamıştır.",
+          content: response.data.answer,
           role: "assistant",
           sender: "ai",
           timestamp: Date.now(),
+          sources: response.data.sources
         };
 
-        const finalMessages = [...updatedMessages, aiResponse];
-        setMessages(finalMessages);
-        sessionService.updateSessionMessages(selectedChatId, finalMessages);
-
-        setIsGenerating(false);
-      }, 1000);
+        setMessages(prev => [...prev, aiResponse]);
+      }
     } catch (error) {
       console.error("Message sending failed:", error);
+      toast.error("Mesaj gönderilirken bir hata oluştu");
+    } finally {
       setIsGenerating(false);
     }
   };
@@ -387,27 +378,6 @@ function AppContent() {
           />
 
           <Route
-            path="/verification"
-            element={
-              isLoading ? (
-                <LoadingScreen />
-              ) : !user ? (
-                <motion.div
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  variants={pageVariants}
-                  style={{ width: "100%", height: "100vh" }}
-                >
-                  <Verification />
-                </motion.div>
-              ) : (
-                <Navigate to="/" replace />
-              )
-            }
-          />
-
-          <Route
             path="/admin"
             element={
               isLoading ? (
@@ -416,25 +386,6 @@ function AppContent() {
                 <AdminGuard>
                   <Admin />
                 </AdminGuard>
-              )
-            }
-          />
-
-          <Route
-            path="/auth/callback"
-            element={
-              isLoading ? (
-                <LoadingScreen />
-              ) : (
-                <motion.div
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  variants={pageVariants}
-                  style={{ width: "100%", height: "100vh" }}
-                >
-                  <AuthCallback />
-                </motion.div>
               )
             }
           />

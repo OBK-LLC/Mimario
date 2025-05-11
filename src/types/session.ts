@@ -18,6 +18,14 @@ export interface Message {
   role: "user" | "assistant";
   timestamp: number;
   sender: "user" | "ai";
+  sources?: Source[];
+}
+
+export interface Source {
+  id: string;
+  title: string;
+  content: string;
+  relevance: number;
 }
 
 export interface PaginationInfo {

@@ -62,10 +62,10 @@ class SessionService {
     return response.data;
   }
 
-  async updateSessionMessages(sessionId: string, messages: any[]) {
-    const response = await axios.put<ApiResponse<Session>>(
+  async updateSessionMessages(sessionId: string, userQuery: string) {
+    const response = await axios.put<ApiResponse<{answer: string; sources: any[]}>>(
       `${API_URL}/api/v1/sessions/${sessionId}/messages`,
-      { messages },
+      { userQuery },
       { headers: this.headers }
     );
     return response.data;

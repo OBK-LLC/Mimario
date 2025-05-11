@@ -64,7 +64,6 @@ export interface AuthContextType {
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   changePassword: (password: string) => Promise<void>;
-  googleSignIn: () => Promise<void>;
   token: string | null;
 }
 
@@ -166,9 +165,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         password,
         metadata
       )) as AuthResponse;
-      // Kayıt sonrası sadece temp_token'ı saklayalım
+      // Store tokens directly and navigate to home instead of verification
       tokenStorage.setTokens(response.token, response.refresh_token);
-      navigate("/verification");
+      setToken(response.token);
+      setUser(response.user);
+      navigate("/");
     } catch (error: any) {
       throw new Error(error.message);
     }
@@ -227,16 +228,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const googleSignIn = async () => {
-    try {
-      await authService.googleSignIn();
-    } catch (error) {
-      console.error("Google sign-in error:", error);
-      showToast.error("Google ile giriş yapılamadı.");
-      throw error;
-    }
-  };
-
   const value = {
     isAuthenticated: !!user,
     user,
@@ -246,7 +237,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     logout,
     forgotPassword,
     changePassword,
-    googleSignIn,
     token,
   };
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -8,15 +8,14 @@ import {
   InputAdornment,
   IconButton,
   Link as MuiLink,
-  Divider,
-  Alert,
 } from "@mui/material";
 import { Link } from "react-router-dom";
-import { Visibility, VisibilityOff, Google } from "@mui/icons-material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useAuth } from "../../contexts/AuthContext";
+import { toast } from "react-toastify";
 import styles from "./login.module.css";
 import { LoginFormData } from "../../types/auth";
 
@@ -33,7 +32,8 @@ const validationSchema = yup.object().shape({
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const { login, googleSignIn } = useAuth();
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const {
     control,
@@ -50,18 +50,11 @@ const Login = () => {
   const onSubmit = async (data: LoginFormData) => {
     try {
       await login(data.email, data.password);
-    } catch (error) {
+      toast.success("Başarıyla giriş yaptınız!");
+      navigate("/");
+    } catch (error: any) {
       console.error("Login error:", error);
-      // TODO: Show error notification
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    try {
-      await googleSignIn();
-    } catch (error) {
-      console.error("Google login error:", error);
-      // TODO: Show error notification
+      toast.error(error.message || "Giriş yapılırken bir hata oluştu");
     }
   };
 
@@ -148,26 +141,6 @@ const Login = () => {
             </Button>
           </div>
         </form>
-
-        <div className={styles.dividerContainer}>
-          <Divider className={styles.divider}>
-            <Typography variant="body2" color="textSecondary">
-              veya
-            </Typography>
-          </Divider>
-        </div>
-
-        <div className={styles.socialLogin}>
-          <Button
-            variant="outlined"
-            fullWidth
-            startIcon={<Google />}
-            onClick={handleGoogleLogin}
-            className={styles.googleButton}
-          >
-            Google ile giriş yap
-          </Button>
-        </div>
 
         <div className={styles.footer}>
           <Typography variant="body2">

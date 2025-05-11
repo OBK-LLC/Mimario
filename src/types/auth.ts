@@ -23,7 +23,6 @@ export interface User {
   display_name?: string;
   metadata?: {
     avatar_url?: string;
-    email_verified?: boolean;
     full_name?: string;
   };
   created_at?: string;

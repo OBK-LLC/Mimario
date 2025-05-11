@@ -70,3 +70,29 @@
   background-color: rgba(0, 0, 0, 0.04);
   color: rgba(0, 0, 0, 0.87);
 }
+
+.sourcesToggle {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--divider);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.sourcesToggle:hover {
+  opacity: 0.8;
+}
+
+.sourcesList {
+  margin-top: 8px;
+  padding-bottom: 0;
+}
+
+.sourceItem {
+  padding: 8px 16px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  background-color: var(--action-hover);
+}

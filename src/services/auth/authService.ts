@@ -2,7 +2,7 @@ import axios from "axios";
 import { AuthResponse, User } from "../../types/auth";
 import { tokenStorage } from "../../utils/tokenStorage";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000").replace(/\/+$/, "");
 const FRONTEND_URL =
   import.meta.env.VITE_FRONTEND_URL || window.location.origin;
 
@@ -156,71 +156,6 @@ class AuthService {
           data.error ||
             "Şifre değiştirme işlemi başarısız oldu. Lütfen daha sonra tekrar deneyin."
         );
-      }
-      throw error;
-    }
-  }
-
-  async verifyEmail(token: string): Promise<AuthResponse> {
-    try {
-      const { data } = await axios.post(
-        `${API_URL}/api/auth/verify-email?token=${token}`,
-        {},
-        {
-          headers: this.headers,
-        }
-      );
-      return {
-        user: {
-          id: data.user.id,
-          email: data.user.email,
-          role: data.user.role || "user",
-          name: data.user.name,
-          metadata: data.user.metadata || {},
-        },
-        token: data.token,
-        refresh_token: data.refresh_token,
-      };
-    } catch (error: any) {
-      if (error.response) {
-        const data = error.response.data;
-        throw new Error(data.error || "E-posta doğrulama başarısız");
-      }
-      throw error;
-    }
-  }
-
-  async resendVerification(token: string): Promise<void> {
-    try {
-      await axios.post(
-        `${API_URL}/api/auth/resend-verification`,
-        {},
-        {
-          headers: {
-            ...this.headers,
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-    } catch (error: any) {
-      if (error.response) {
-        const data = error.response.data;
-        throw new Error(data.error || "Doğrulama e-postası gönderilemedi");
-      }
-      throw error;
-    }
-  }
-
-  async googleSignIn(): Promise<void> {
-    try {
-      const { data } = await axios.get(`${API_URL}/api/auth/signin/google`, {
-        headers: this.headers,
-      });
-      window.location.href = data.url;
-    } catch (error: any) {
-      if (error.response) {
-        const data = error.response.data;
-        throw new Error(data.error || "Google ile giriş başarısız");
       }
       throw error;
     }

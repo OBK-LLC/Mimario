@@ -1,6 +1,12 @@
 import React, { useState } from "react";
-import { Paper, Typography, Box, IconButton } from "@mui/material";
-import { ThumbUp, ThumbDown, ContentCopy } from "@mui/icons-material";
+import { Paper, Typography, Box, IconButton, Collapse, List, ListItem } from "@mui/material";
+import { 
+  ThumbUp, 
+  ThumbDown, 
+  ContentCopy, 
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon 
+} from "@mui/icons-material";
 import { MessageProps } from "../../types/chat";
 import { useTheme } from "@mui/material/styles";
 import styles from "./message.module.css";
@@ -16,6 +22,9 @@ export const Message: React.FC<MessageProps> = ({
   const isDarkMode = theme.palette.mode === "dark";
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [isPositiveFeedback, setIsPositiveFeedback] = useState(true);
+  const [showSources, setShowSources] = useState(false);
+  const sources = message.sources || [];
+  const hasSources = isAI && sources.length > 0;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(message.content);
@@ -65,7 +74,60 @@ export const Message: React.FC<MessageProps> = ({
         >
           {new Date(message.timestamp).toLocaleTimeString()}
         </Typography>
+
+        {hasSources && (
+          <>
+            <Box 
+              sx={{ 
+                mt: 2, 
+                pt: 2, 
+                borderTop: 1, 
+                borderColor: 'divider',
+                display: 'flex',
+                alignItems: 'center',
+                cursor: 'pointer'
+              }}
+              onClick={() => setShowSources(!showSources)}
+            >
+              <Typography 
+                variant="body2" 
+                color="text.secondary"
+                sx={{ flex: 1 }}
+              >
+                Kaynaklar ({sources.length})
+              </Typography>
+              {showSources ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            </Box>
+
+            <Collapse in={showSources}>
+              <List sx={{ mt: 1, pb: 0 }}>
+                {sources.map((source, index) => (
+                  <ListItem 
+                    key={source.id} 
+                    sx={{ 
+                      px: 2, 
+                      py: 1,
+                      backgroundColor: 'action.hover',
+                      borderRadius: 1,
+                      mb: 1
+                    }}
+                  >
+                    <Box>
+                      <Typography variant="subtitle2" gutterBottom>
+                        {source.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {source.content}
+                      </Typography>
+                    </Box>
+                  </ListItem>
+                ))}
+              </List>
+            </Collapse>
+          </>
+        )}
       </Paper>
+
       {isAI && (
         <Box className={styles.messageActions}>
           <IconButton

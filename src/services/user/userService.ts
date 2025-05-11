@@ -90,7 +90,17 @@ export const userService = {
 
   async updateUser(userId: string, userData: Partial<User>): Promise<User> {
     try {
-      const { data } = await api.put<User>(`/api/users/${userId}`, userData);
+      // If we're updating the role, use the specific role update endpoint
+      if ('role' in userData) {
+        const { data } = await api.put<User>(
+          `/api/v1/admin/users/${userId}/role`,
+          { role: userData.role }
+        );
+        return data;
+      }
+
+      // For other user data updates, use the general update endpoint
+      const { data } = await api.put<User>(`/api/v1/users/${userId}`, userData);
       return data;
     } catch (error: any) {
       throw new Error(

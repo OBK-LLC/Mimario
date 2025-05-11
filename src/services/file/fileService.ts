@@ -30,7 +30,7 @@ export class FileService {
       });
 
       const headers = await this.getHeaders();
-      const response = await fetch(`${BASE_URL}/upload-documents`, {
+      const response = await fetch(`${BASE_URL}/documents`, {
         method: 'POST',
         headers: {
           ...headers
@@ -81,13 +81,13 @@ export class FileService {
   static async updateDocument(documentId: string, content: string): Promise<FileResponse> {
     try {
       const headers = await this.getHeaders();
-      const response = await fetch(`${BASE_URL}/update-document`, {
+      const response = await fetch(`${BASE_URL}/documents/${documentId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           ...headers
         },
-        body: JSON.stringify({ documentId, content })
+        body: JSON.stringify({ content })
       });
 
       if (!response.ok) {
@@ -105,7 +105,7 @@ export class FileService {
   static async deleteDocument(documentId: string): Promise<void> {
     try {
       const headers = await this.getHeaders();
-      const response = await fetch(`${BASE_URL}/delete-document/${documentId}`, {
+      const response = await fetch(`${BASE_URL}/documents/${documentId}`, {
         method: 'DELETE',
         headers: {
           ...headers,
