@@ -122,9 +122,15 @@ function AppContent() {
         setSelectedChatId(response.data.id);
         setMessages(response.data.messages || []);
         navigate(`/chat/${response.data.id}`);
+      } else {
+        throw new Error("Sohbet oluşturulamadı");
       }
     } catch (error) {
-      console.error("Chat creation failed:", error);
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Yeni sohbet oluşturulamadı. Lütfen tekrar deneyin.");
+      }
     }
   };
 
@@ -153,6 +159,7 @@ function AppContent() {
   const handleDeleteChat = async (chatId: string) => {
     try {
       await deleteSession(chatId);
+
       if (selectedChatId === chatId) {
         const lastChat = chatHistories[chatHistories.length - 1];
         if (lastChat) {
@@ -166,7 +173,11 @@ function AppContent() {
         }
       }
     } catch (error) {
-      console.error("Chat deletion failed:", error);
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Sohbet silinemedi. Lütfen tekrar deneyin.");
+      }
     }
   };
 
@@ -174,7 +185,11 @@ function AppContent() {
     try {
       await updateSession(chatId, newTitle);
     } catch (error) {
-      console.error("Chat update failed:", error);
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Sohbet başlığı güncellenemedi. Lütfen tekrar deneyin.");
+      }
     }
   };
 
@@ -189,12 +204,15 @@ function AppContent() {
       timestamp: Date.now(),
     };
 
-    setMessages(prev => [...prev, newMessage]);
+    setMessages((prev) => [...prev, newMessage]);
     setIsGenerating(true);
 
     try {
-      const response = await sessionService.updateSessionMessages(selectedChatId, content);
-      
+      const response = await sessionService.updateSessionMessages(
+        selectedChatId,
+        content
+      );
+
       if (response.success && response.data) {
         const aiResponse: Message = {
           id: uuidv4(),
@@ -202,14 +220,21 @@ function AppContent() {
           role: "assistant",
           sender: "ai",
           timestamp: Date.now(),
-          sources: response.data.sources
+          sources: response.data.sources,
         };
 
-        setMessages(prev => [...prev, aiResponse]);
+        setMessages((prev) => [...prev, aiResponse]);
+      } else {
+        throw new Error(response.message || "Yanıt alınamadı");
       }
     } catch (error) {
-      console.error("Message sending failed:", error);
-      toast.error("Mesaj gönderilirken bir hata oluştu");
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Mesaj gönderilirken bir hata oluştu. Lütfen tekrar deneyin.");
+      }
+
+      setMessages((prev) => prev.slice(0, -1));
     } finally {
       setIsGenerating(false);
     }

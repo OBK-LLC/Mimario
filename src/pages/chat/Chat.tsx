@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   useMediaQuery,
@@ -6,6 +6,9 @@ import {
   Drawer,
   IconButton,
   Button,
+  Alert,
+  AlertTitle,
+  Collapse,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -13,9 +16,11 @@ import {
   Logout as LogoutIcon,
 } from "@mui/icons-material";
 import { Link, useNavigate } from "react-router-dom";
+import { sessionService } from "../../services/session/sessionService";
 import Sidebar from "../../components/sidebar/Sidebar";
 import ChatContainer from "../../components/chat-container/ChatContainer";
 import { ChatHistory, Message } from "../../types/chat";
+import { showToast } from "../../utils/toast";
 
 interface ChatPageProps {
   chatHistories: ChatHistory[];
@@ -50,6 +55,31 @@ const Chat: React.FC<ChatPageProps> = ({
   const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [usageLimits, setUsageLimits] = useState<{
+    daily: { current: number; limit: number };
+    monthly: { current: number; limit: number };
+  } | null>(null);
+  const [showUsageWarning, setShowUsageWarning] = useState(false);
+
+  useEffect(() => {
+    fetchUsageLimits();
+  }, [messages]);
+
+  const fetchUsageLimits = async () => {
+    try {
+      const usage = await sessionService.getSessionUsage();
+      setUsageLimits(usage);
+
+      if (usage) {
+        const dailyPercentage = (usage.daily.current / usage.daily.limit) * 100;
+        const monthlyPercentage = (usage.monthly.current / usage.monthly.limit) * 100;
+
+        setShowUsageWarning(dailyPercentage >= 90 || monthlyPercentage >= 90);
+      }
+    } catch (error) {
+      console.error("Usage limits fetch error:", error);
+    }
+  };
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -60,12 +90,67 @@ const Chat: React.FC<ChatPageProps> = ({
     navigate("/");
   };
 
+  const handleSendMessage = async (content: string) => {
+    try {
+      if (usageLimits) {
+        const { daily, monthly } = usageLimits;
+
+        if (daily.current >= daily.limit) {
+          showToast.error("Günlük mesaj limitinize ulaştınız. Yarın tekrar deneyin.");
+          return;
+        }
+
+        if (monthly.current >= monthly.limit) {
+          showToast.error("Aylık mesaj limitinize ulaştınız. Gelecek ay tekrar deneyin.");
+          return;
+        }
+      }
+
+      await onSendMessage(content);
+    } catch (error) {
+      if (error instanceof Error) {
+        showToast.error(error.message);
+      } else {
+        showToast.error("Mesaj gönderilirken bir hata oluştu.");
+      }
+    }
+  };
+
   return (
     <Box sx={{ display: "flex", height: "100vh" }}>
+      {showUsageWarning && usageLimits && (
+        <Collapse in={showUsageWarning}>
+          <Alert
+            severity="warning"
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              zIndex: 1200,
+              borderRadius: 0,
+            }}
+            onClose={() => setShowUsageWarning(false)}
+          >
+            <AlertTitle>Limit Uyarısı</AlertTitle>
+            {usageLimits.daily.current >= usageLimits.daily.limit * 0.9 && (
+              <div>
+                Günlük limit: {usageLimits.daily.current}/{usageLimits.daily.limit}
+              </div>
+            )}
+            {usageLimits.monthly.current >= usageLimits.monthly.limit * 0.9 && (
+              <div>
+                Aylık limit: {usageLimits.monthly.current}/{usageLimits.monthly.limit}
+              </div>
+            )}
+          </Alert>
+        </Collapse>
+      )}
+
       <Box
         sx={{
           position: "absolute",
-          top: 16,
+          top: showUsageWarning ? 80 : 16,
           right: 16,
           display: "flex",
           gap: 2,
@@ -184,12 +269,12 @@ const Chat: React.FC<ChatPageProps> = ({
         sx={{
           flex: 1,
           overflow: "hidden",
-          paddingTop: { xs: "80px", md: "80px" },
+          paddingTop: showUsageWarning ? "140px" : { xs: "80px", md: "80px" },
         }}
       >
         <ChatContainer
           messages={messages}
-          onSendMessage={onSendMessage}
+          onSendMessage={handleSendMessage}
           isGenerating={isGenerating}
           sessionId={selectedChatId || ""}
         />
