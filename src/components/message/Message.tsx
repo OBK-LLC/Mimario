@@ -101,27 +101,33 @@ export const Message: React.FC<MessageProps> = ({
 
             <Collapse in={showSources}>
               <List sx={{ mt: 1, pb: 0 }}>
-                {sources.map((source, index) => (
-                  <ListItem 
-                    key={source.id} 
-                    sx={{ 
-                      px: 2, 
-                      py: 1,
-                      backgroundColor: 'action.hover',
-                      borderRadius: 1,
-                      mb: 1
-                    }}
-                  >
-                    <Box>
-                      <Typography variant="subtitle2" gutterBottom>
-                        {source.title}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {source.content}
-                      </Typography>
-                    </Box>
-                  </ListItem>
-                ))}
+                {sources.map((source, index) => {
+                  const sourceKey = source.id ? 
+                    `${message.id}-${source.id}` : 
+                    `${message.id}-source-${index}`;
+                    
+                  return (
+                    <ListItem 
+                      key={sourceKey}
+                      sx={{ 
+                        px: 2, 
+                        py: 1,
+                        backgroundColor: 'action.hover',
+                        borderRadius: 1,
+                        mb: 1
+                      }}
+                    >
+                      <Box>
+                        <Typography variant="subtitle2" gutterBottom>
+                          {source.title}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {source.content}
+                        </Typography>
+                      </Box>
+                    </ListItem>
+                  );
+                })}
               </List>
             </Collapse>
           </>

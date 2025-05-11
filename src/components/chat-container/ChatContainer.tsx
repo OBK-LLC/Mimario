@@ -22,8 +22,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const theme = useTheme();
   const { user } = useAuth();
 
-  console.log("ChatContainer user:", user);
-
   const capitalize = (str: string) => {
     if (!str) return str;
     return str.charAt(0).toUpperCase() + str.slice(1);
