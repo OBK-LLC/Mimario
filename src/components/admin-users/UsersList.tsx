@@ -371,7 +371,7 @@ const UsersList: React.FC = () => {
                 <TableCell>
                   <div className={styles.actions}>
                     <Tooltip title="Düzenle">
-                      {user.id === currentUser?.id ? (
+                      {user.id === currentUser?.id && currentUser.role !== "superadmin" ? (
                         <span>
                           <IconButton
                             size="small"
