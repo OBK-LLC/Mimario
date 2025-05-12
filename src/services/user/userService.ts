@@ -1,5 +1,7 @@
 import axios, { InternalAxiosRequestConfig, AxiosResponse } from "axios";
 import { tokenStorage } from "../../utils/tokenStorage";
+import { supabase } from '../../lib/supabase';
+import type { UserUsageResponse } from '../../types/usage';
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -131,6 +133,16 @@ export const userService = {
         throw new Error(error.response.data.message || "Profil güncellenemedi");
       }
       throw new Error("Sunucuya bağlanılamadı");
+    }
+  },
+
+  async getUserUsage(): Promise<UserUsageResponse> {
+    try {
+      const response = await api.get<UserUsageResponse>('/api/users/me/usage');
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching usage stats:', error);
+      throw new Error(error.response?.data?.message || 'Kullanım bilgileri alınamadı');
     }
   },
 };

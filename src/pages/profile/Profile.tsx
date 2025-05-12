@@ -17,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { showToast } from "../../utils/toast";
 import { userService } from "../../services/user/userService";
+import type { UserUsageResponse } from "../../types/usage";
 import styles from "./profile.module.css";
 
 interface ProfileData {
@@ -57,6 +58,7 @@ const Profile: React.FC = () => {
   } | null>(null);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [usageData, setUsageData] = useState<UserUsageResponse | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -71,6 +73,18 @@ const Profile: React.FC = () => {
       }
     }
   }, [user]);
+
+  useEffect(() => {
+    const fetchUsage = async () => {
+      try {
+        const data = await userService.getUserUsage();
+        setUsageData(data);
+      } catch (error) {
+        console.error("Usage data fetch error:", error);
+      }
+    };
+    fetchUsage();
+  }, []);
 
   const handleProfileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -337,6 +351,97 @@ const Profile: React.FC = () => {
                 Şifreyi Değiştir
               </Button>
             </form>
+          </Paper>
+
+          <Paper className={styles.section} elevation={0}>
+            <Typography variant="h5" className={styles.sectionTitle}>
+              Kullanım Limitleri
+            </Typography>
+            {usageData ? (
+              <Box className={styles.usageInfo}>
+                <Box className={styles.packageCard}>
+                  <Box className={styles.packageHeader}>
+                    <Typography variant="h6" className={styles.packageTitle}>
+                      Paket Bilgisi
+                    </Typography>
+                    <Typography variant="h5" className={styles.packageName}>
+                      {usageData.limits.package_name === 'free' ? 'Ücretsiz' : 
+                       usageData.limits.package_name === 'pro' ? 'Profesyonel' : 
+                       usageData.limits.package_name === 'enterprise' ? 'Kurumsal' : 
+                       usageData.limits.package_name}
+                    </Typography>
+                  </Box>
+                  <Box className={styles.usageMetrics}>
+                    <Box className={styles.usageProgress}>
+                      <Box className={styles.usageLabel}>
+                        <Box className={styles.iconWrapper}>
+                          <span className={styles.dayIcon}></span>
+                        </Box>
+                        <Typography variant="body2">Günlük Oturum</Typography>
+                      </Box>
+                      <Box className={styles.progressContainer}>
+                        <Box 
+                          className={styles.progressBar} 
+                          sx={{ 
+                            width: `${Math.min((usageData.current_usage.daily_sessions_created / usageData.limits.max_daily_sessions) * 100, 100)}%` 
+                          }}
+                        />
+                        <Typography variant="body2" className={styles.progressText}>
+                          {usageData.current_usage.daily_sessions_created} / {usageData.limits.max_daily_sessions}
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    <Box className={styles.usageProgress}>
+                      <Box className={styles.usageLabel}>
+                        <Box className={styles.iconWrapper}>
+                          <span className={styles.monthIcon}></span>
+                        </Box>
+                        <Typography variant="body2">Aylık Oturum</Typography>
+                      </Box>
+                      <Box className={styles.progressContainer}>
+                        <Box 
+                          className={styles.progressBar} 
+                          sx={{ 
+                            width: `${Math.min((usageData.current_usage.monthly_sessions_created / usageData.limits.max_monthly_sessions) * 100, 100)}%` 
+                          }}
+                        />
+                        <Typography variant="body2" className={styles.progressText}>
+                          {usageData.current_usage.monthly_sessions_created} / {usageData.limits.max_monthly_sessions}
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    <Box className={styles.usageProgress}>
+                      <Box className={styles.usageLabel}>
+                        <Box className={styles.iconWrapper}>
+                          <span className={styles.messageIcon}></span>
+                        </Box>
+                        <Typography variant="body2">Oturum Başına Mesaj</Typography>
+                      </Box>
+                      <Box className={styles.progressContainer}>
+                        <Box 
+                          className={styles.progressBar} 
+                          sx={{ 
+                            width: '100%' 
+                          }}
+                        />
+                        <Typography variant="body2" className={styles.progressText}>
+                          {usageData.limits.max_messages_per_session} / {usageData.limits.max_messages_per_session}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Box>
+              </Box>
+            ) : (
+              <Box className={styles.loadingContainer}>
+                <Box className={styles.loadingAnimation}></Box>
+                <Typography variant="body2" className={styles.loadingText}>
+                  Kullanım bilgileri yükleniyor...
+                </Typography>
+              </Box>
+            )}
           </Paper>
         </Box>
       </Box>
