@@ -70,7 +70,6 @@ class FeedbackService {
         }
       );
 
-      console.log("Feedback response:", JSON.stringify(response.data, null, 2));
 
       return {
         feedbacks: response.data.data.map((feedback) => ({

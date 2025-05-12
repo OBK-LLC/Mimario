@@ -271,7 +271,7 @@ const Profile: React.FC = () => {
                         color: 'text.secondary'
                       }}
                     >
-                      Paket Bilgisi
+                      PAKET BİLGİSİ
                     </Typography>
                     <Typography
                       variant="h5"
@@ -282,7 +282,7 @@ const Profile: React.FC = () => {
                         color: 'text.primary'
                       }}
                     >
-                      {usageData.limits.package_name === 'free' ? 'Ücretsiz' : 
+                      {usageData.limits.package_name === 'free' ? 'ÜCRETSİZ' : 
                        usageData.limits.package_name === 'pro' ? 'Profesyonel' : 
                        usageData.limits.package_name === 'enterprise' ? 'Kurumsal' : 
                        usageData.limits.package_name}
@@ -377,7 +377,7 @@ const Profile: React.FC = () => {
                     </Box>
 
                     {/* Oturum Başına Mesaj */}
-                    <Box>
+                    <Box sx={{ mb: 3 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                         <Box sx={{ mr: 1.5 }}>
                           <MessageIcon sx={{ color: 'text.primary' }} />
@@ -386,35 +386,14 @@ const Profile: React.FC = () => {
                           Oturum Başına Mesaj
                         </Typography>
                       </Box>
-                      <Box sx={{ position: 'relative' }}>
-                        <Box
-                          sx={{
-                            height: 4,
-                            bgcolor: 'divider',
-                            borderRadius: 1,
-                            overflow: 'hidden'
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              height: '100%',
-                              bgcolor: 'primary.main',
-                              borderRadius: 1,
-                              width: '100%',
-                              transition: 'width 0.5s ease'
-                            }}
-                          />
-                        </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                         <Typography
                           variant="caption"
                           sx={{
-                            position: 'absolute',
-                            right: 0,
-                            top: '8px',
                             color: 'text.secondary'
                           }}
                         >
-                          {usageData.limits.max_messages_per_session} / {usageData.limits.max_messages_per_session}
+                          5000
                         </Typography>
                       </Box>
                     </Box>

@@ -8,6 +8,8 @@ export interface UserLimits {
 export interface CurrentUsage {
     daily_sessions_created: number;
     monthly_sessions_created: number;
+    messages_in_current_session: number;
+    total_messages_sent: number;
 }
 
 export interface UserUsageStats {

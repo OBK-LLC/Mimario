@@ -57,7 +57,6 @@ const Chat: React.FC<ChatPageProps> = ({
   const theme = useTheme();
   const navigate = useNavigate();
   
-  console.log("Current user:", user); // Kullanıcı bilgilerini kontrol etmek için
 
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [mobileOpen, setMobileOpen] = useState(false);
