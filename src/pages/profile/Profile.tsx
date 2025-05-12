@@ -12,7 +12,14 @@ import {
   Avatar,
   Snackbar,
 } from "@mui/material";
-import { Visibility, VisibilityOff, ArrowBack } from "@mui/icons-material";
+import { 
+  Visibility, 
+  VisibilityOff, 
+  ArrowBack,
+  AccessTime as AccessTimeIcon,
+  CalendarToday as CalendarTodayIcon,
+  Message as MessageIcon
+} from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { showToast } from "../../utils/toast";
@@ -237,80 +244,182 @@ const Profile: React.FC = () => {
             </Typography>
             {usageData ? (
               <Box className={styles.usageInfo}>
-                <Box className={styles.packageCard}>
-                  <Box className={styles.packageHeader}>
-                    <Typography variant="h6" className={styles.packageTitle}>
+                <Paper
+                  sx={{
+                    width: '100%',
+                    bgcolor: 'background.paper',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    boxShadow: 1
+                  }}
+                >
+                  <Box
+                    sx={{
+                      p: 3,
+                      borderBottom: '1px solid',
+                      borderColor: 'divider'
+                    }}
+                  >
+                    <Typography
+                      variant="subtitle2"
+                      sx={{
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.1em',
+                        mb: 0.5,
+                        color: 'text.secondary'
+                      }}
+                    >
                       Paket Bilgisi
                     </Typography>
-                    <Typography variant="h5" className={styles.packageName}>
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        color: 'text.primary'
+                      }}
+                    >
                       {usageData.limits.package_name === 'free' ? 'Ücretsiz' : 
                        usageData.limits.package_name === 'pro' ? 'Profesyonel' : 
                        usageData.limits.package_name === 'enterprise' ? 'Kurumsal' : 
                        usageData.limits.package_name}
                     </Typography>
                   </Box>
-                  <Box className={styles.usageMetrics}>
-                    <Box className={styles.usageProgress}>
-                      <Box className={styles.usageLabel}>
-                        <Box className={styles.iconWrapper}>
-                          <span className={styles.dayIcon}></span>
+                  
+                  <Box sx={{ p: 3 }}>
+                    {/* Günlük Oturum */}
+                    <Box sx={{ mb: 3 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <Box sx={{ mr: 1.5 }}>
+                          <AccessTimeIcon sx={{ color: 'text.primary' }} />
                         </Box>
-                        <Typography variant="body2">Günlük Oturum</Typography>
+                        <Typography variant="body2" color="text.primary">
+                          Günlük Oturum
+                        </Typography>
                       </Box>
-                      <Box className={styles.progressContainer}>
-                        <Box 
-                          className={styles.progressBar} 
-                          sx={{ 
-                            width: `${Math.min((usageData.current_usage.daily_sessions_created / usageData.limits.max_daily_sessions) * 100, 100)}%` 
+                      <Box sx={{ position: 'relative' }}>
+                        <Box
+                          sx={{
+                            height: 4,
+                            bgcolor: 'divider',
+                            borderRadius: 1,
+                            overflow: 'hidden'
                           }}
-                        />
-                        <Typography variant="body2" className={styles.progressText}>
+                        >
+                          <Box
+                            sx={{
+                              height: '100%',
+                              bgcolor: 'primary.main',
+                              borderRadius: 1,
+                              width: `${Math.min((usageData.current_usage.daily_sessions_created / usageData.limits.max_daily_sessions) * 100, 100)}%`,
+                              transition: 'width 0.5s ease'
+                            }}
+                          />
+                        </Box>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            position: 'absolute',
+                            right: 0,
+                            top: '8px',
+                            color: 'text.secondary'
+                          }}
+                        >
                           {usageData.current_usage.daily_sessions_created} / {usageData.limits.max_daily_sessions}
                         </Typography>
                       </Box>
                     </Box>
 
-                    <Box className={styles.usageProgress}>
-                      <Box className={styles.usageLabel}>
-                        <Box className={styles.iconWrapper}>
-                          <span className={styles.monthIcon}></span>
+                    {/* Aylık Oturum */}
+                    <Box sx={{ mb: 3 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <Box sx={{ mr: 1.5 }}>
+                          <CalendarTodayIcon sx={{ color: 'text.primary' }} />
                         </Box>
-                        <Typography variant="body2">Aylık Oturum</Typography>
+                        <Typography variant="body2" color="text.primary">
+                          Aylık Oturum
+                        </Typography>
                       </Box>
-                      <Box className={styles.progressContainer}>
-                        <Box 
-                          className={styles.progressBar} 
-                          sx={{ 
-                            width: `${Math.min((usageData.current_usage.monthly_sessions_created / usageData.limits.max_monthly_sessions) * 100, 100)}%` 
+                      <Box sx={{ position: 'relative' }}>
+                        <Box
+                          sx={{
+                            height: 4,
+                            bgcolor: 'divider',
+                            borderRadius: 1,
+                            overflow: 'hidden'
                           }}
-                        />
-                        <Typography variant="body2" className={styles.progressText}>
+                        >
+                          <Box
+                            sx={{
+                              height: '100%',
+                              bgcolor: 'primary.main',
+                              borderRadius: 1,
+                              width: `${Math.min((usageData.current_usage.monthly_sessions_created / usageData.limits.max_monthly_sessions) * 100, 100)}%`,
+                              transition: 'width 0.5s ease'
+                            }}
+                          />
+                        </Box>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            position: 'absolute',
+                            right: 0,
+                            top: '8px',
+                            color: 'text.secondary'
+                          }}
+                        >
                           {usageData.current_usage.monthly_sessions_created} / {usageData.limits.max_monthly_sessions}
                         </Typography>
                       </Box>
                     </Box>
 
-                    <Box className={styles.usageProgress}>
-                      <Box className={styles.usageLabel}>
-                        <Box className={styles.iconWrapper}>
-                          <span className={styles.messageIcon}></span>
+                    {/* Oturum Başına Mesaj */}
+                    <Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <Box sx={{ mr: 1.5 }}>
+                          <MessageIcon sx={{ color: 'text.primary' }} />
                         </Box>
-                        <Typography variant="body2">Oturum Başına Mesaj</Typography>
+                        <Typography variant="body2" color="text.primary">
+                          Oturum Başına Mesaj
+                        </Typography>
                       </Box>
-                      <Box className={styles.progressContainer}>
-                        <Box 
-                          className={styles.progressBar} 
-                          sx={{ 
-                            width: '100%' 
+                      <Box sx={{ position: 'relative' }}>
+                        <Box
+                          sx={{
+                            height: 4,
+                            bgcolor: 'divider',
+                            borderRadius: 1,
+                            overflow: 'hidden'
                           }}
-                        />
-                        <Typography variant="body2" className={styles.progressText}>
+                        >
+                          <Box
+                            sx={{
+                              height: '100%',
+                              bgcolor: 'primary.main',
+                              borderRadius: 1,
+                              width: '100%',
+                              transition: 'width 0.5s ease'
+                            }}
+                          />
+                        </Box>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            position: 'absolute',
+                            right: 0,
+                            top: '8px',
+                            color: 'text.secondary'
+                          }}
+                        >
                           {usageData.limits.max_messages_per_session} / {usageData.limits.max_messages_per_session}
                         </Typography>
                       </Box>
                     </Box>
                   </Box>
-                </Box>
+                </Paper>
               </Box>
             ) : (
               <Box className={styles.loadingContainer}>
