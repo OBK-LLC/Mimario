@@ -422,9 +422,38 @@ const Profile: React.FC = () => {
                 </Paper>
               </Box>
             ) : (
-              <Box className={styles.loadingContainer}>
-                <Box className={styles.loadingAnimation}></Box>
-                <Typography variant="body2" className={styles.loadingText}>
+              <Box 
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: 250
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: '50%',
+                    border: '3px solid',
+                    borderColor: 'divider',
+                    borderTopColor: 'primary.main',
+                    mb: 2,
+                    animation: 'spin 1s ease-in-out infinite',
+                    '@keyframes spin': {
+                      to: {
+                        transform: 'rotate(360deg)',
+                      },
+                    },
+                  }}
+                />
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: 'text.secondary'
+                  }}
+                >
                   Kullanım bilgileri yükleniyor...
                 </Typography>
               </Box>
