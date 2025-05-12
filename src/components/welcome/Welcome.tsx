@@ -31,11 +31,13 @@ import {
   PersonAdd as SignupIcon,
   Person as ProfileIcon,
   Logout as LogoutIcon,
+  AdminPanelSettings as AdminIcon,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChatHistory } from "../../types/chat";
 import { useTheme } from "@mui/material/styles";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface EditDialogProps {
   open: boolean;
@@ -112,6 +114,7 @@ export const Welcome: React.FC<WelcomeProps> = ({
   isLoggedIn,
   onLogout,
 }) => {
+  const { user } = useAuth();
   const recentChats = chatHistories.slice(-3).reverse();
   const [editingChat, setEditingChat] = useState<{
     id: string;
@@ -215,8 +218,35 @@ export const Welcome: React.FC<WelcomeProps> = ({
             position: "absolute",
             top: 16,
             right: { xs: 16, md: "calc((100% - 1225px) / 2 + 16px)" },
+            display: "flex",
+            gap: 2,
           }}
         >
+          {user?.role === "admin" || user?.role === "superadmin" ? (
+            <motion.div
+              variants={buttonVariants}
+              whileHover="hover"
+              whileTap="tap"
+            >
+              <Button
+                component={Link}
+                to="/admin"
+                variant="outlined"
+                startIcon={<AdminIcon />}
+                sx={{
+                  textTransform: "none",
+                  "&:hover": {
+                    bgcolor: "rgba(0, 0, 0, 0.04)",
+                    borderColor: (theme) =>
+                      `${theme.palette.primary.main} !important`,
+                    color: (theme) => `${theme.palette.primary.main} !important`,
+                  },
+                }}
+              >
+                Admin
+              </Button>
+            </motion.div>
+          ) : null}
           <motion.div
             variants={buttonVariants}
             whileHover="hover"

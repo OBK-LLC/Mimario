@@ -1,11 +1,13 @@
 import React from "react";
-import { Typography, Container, Paper, Box } from "@mui/material";
+import { Typography, Container, Paper, Box, Button } from "@mui/material";
 import {
   People as PeopleIcon,
   Folder as FolderIcon,
   Feedback as FeedbackIcon,
   AdminPanelSettings as AdminIcon,
+  Home as HomeIcon,
 } from "@mui/icons-material";
+import { Link } from "react-router-dom";
 import TabPanel from "../../components/admin-tab-panel/TabPanel";
 import UsersList from "../../components/admin-users/UsersList";
 import FileManager from "../../components/admin-files/FileManager";
@@ -34,17 +36,41 @@ const Admin: React.FC = () => {
   return (
     <Box className={styles.container}>
       <Paper elevation={0} className={styles.header}>
-        <AdminIcon sx={{ fontSize: 48, mb: 2, opacity: 0.9 }} />
-        <Typography
-          variant="h4"
-          component="h1"
+        <Box
           sx={{
-            fontWeight: 600,
-            letterSpacing: -0.5,
+            position: "relative",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            mb: 3,
+            px: 2,
+            py: 2,
           }}
         >
-          Yönetici Paneli
-        </Typography>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <AdminIcon sx={{ mr: 2 }} />
+            <Typography variant="h5" component="h1">
+              Yönetici Paneli
+            </Typography>
+          </Box>
+          <Button
+            component={Link}
+            to="/"
+            variant="outlined"
+            startIcon={<HomeIcon />}
+            sx={{
+              position: "absolute",
+              right: 16,
+              textTransform: "none",
+              "&:hover": {
+                transform: "scale(1.05)",
+                backgroundColor: "rgba(0, 0, 0, 0.04)",
+              },
+            }}
+          >
+            Ana Sayfa
+          </Button>
+        </Box>
         <Typography
           variant="body1"
           color="inherit"

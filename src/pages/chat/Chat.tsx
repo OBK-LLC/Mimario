@@ -14,9 +14,11 @@ import {
   Menu as MenuIcon,
   Person as ProfileIcon,
   Logout as LogoutIcon,
+  AdminPanelSettings as AdminIcon,
 } from "@mui/icons-material";
 import { Link, useNavigate } from "react-router-dom";
 import { sessionService } from "../../services/session/sessionService";
+import { useAuth } from "../../contexts/AuthContext";
 import Sidebar from "../../components/sidebar/Sidebar";
 import ChatContainer from "../../components/chat-container/ChatContainer";
 import { ChatHistory, Message } from "../../types/chat";
@@ -51,8 +53,12 @@ const Chat: React.FC<ChatPageProps> = ({
   onSendMessage,
   onLogout,
 }) => {
+  const { user } = useAuth();
   const theme = useTheme();
   const navigate = useNavigate();
+  
+  console.log("Current user:", user); // Kullanıcı bilgilerini kontrol etmek için
+
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [mobileOpen, setMobileOpen] = useState(false);
   const [usageLimits, setUsageLimits] = useState<{
@@ -157,6 +163,28 @@ const Chat: React.FC<ChatPageProps> = ({
           zIndex: 1100,
         }}
       >
+        {user?.role === "admin" || user?.role === "superadmin" ? (
+          <Button
+            component={Link}
+            to="/admin"
+            variant="outlined"
+            startIcon={<AdminIcon />}
+            sx={{
+              textTransform: "none",
+              "&:hover": {
+                transform: "scale(1.05)",
+                backgroundColor: "rgba(0, 0, 0, 0.04)",
+                color: "inherit !important",
+                borderColor: "rgba(0, 0, 0, 0.23) !important",
+                "& .MuiButton-startIcon": {
+                  color: "inherit !important",
+                },
+              },
+            }}
+          >
+            Admin
+          </Button>
+        ) : null}
         <Button
           component={Link}
           to="/profile"
@@ -172,7 +200,7 @@ const Chat: React.FC<ChatPageProps> = ({
               "& .MuiButton-startIcon": {
                 color: "inherit !important",
               },
-            },
+            }
           }}
         >
           Profil

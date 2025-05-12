@@ -255,6 +255,7 @@ function AppContent() {
     isGenerating,
     onSelectChat: handleSelectChat,
     onNewChat: handleNewChat,
+    user,
     onDeleteChat: handleDeleteChat,
     onEditChatTitle: handleEditChatTitle,
     onToggleTheme: toggleColorMode,
