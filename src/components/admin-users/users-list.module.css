@@ -19,9 +19,10 @@
   padding: 8px 0;
 }
 
-.userInfo span {
-  font-weight: 500;
-  color: var(--text-primary);
+.userInfo > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .infoItem {
@@ -35,6 +36,20 @@
 .infoItem svg {
   color: var(--text-secondary);
   font-size: 1.1rem;
+}
+
+.packageInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.limitsInfo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
 }
 
 .actions {
@@ -89,21 +104,18 @@
   }
 
   .userInfo {
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
-  }
-}
-
-@media (max-width: 600px) {
-  .actions {
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .userInfo {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
+  }
+
+  .packageInfo {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .limitsInfo {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

@@ -20,6 +20,13 @@ import {
   Button,
   Paper,
   Box,
+  TextField,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Grid,
+  Tooltip,
 } from "@mui/material";
 import {
   Email as EmailIcon,
@@ -28,12 +35,41 @@ import {
   Delete as DeleteIcon,
   AdminPanelSettings as AdminIcon,
   Person as UserIcon,
+  WorkspacePremium as PackageIcon,
 } from "@mui/icons-material";
 import styles from "./users-list.module.css";
 import userService, { User } from "../../services/user/userService";
 import { useAuth } from "../../contexts/AuthContext";
 
 const ITEMS_PER_PAGE = 10;
+const PACKAGE_OPTIONS = [
+  { value: "free", label: "Ücretsiz" },
+  { value: "basic", label: "Temel" },
+  { value: "pro", label: "Profesyonel" },
+];
+
+interface PackageDialogState {
+  open: boolean;
+  userId: string | null;
+  userData: {
+    package_name: string;
+    max_daily_sessions: number;
+    max_monthly_sessions: number;
+    max_messages_per_session: number;
+  };
+}
+
+interface EditUserDialogState {
+  open: boolean;
+  userId: string | null;
+  userData: {
+    role: "user" | "editor" | "admin" | "superadmin";
+    package_name: string;
+    max_daily_sessions: number;
+    max_monthly_sessions: number;
+    max_messages_per_session: number;
+  };
+}
 
 const UsersList: React.FC = () => {
   const { user: currentUser } = useAuth();
@@ -44,6 +80,27 @@ const UsersList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
+  const [packageDialog, setPackageDialog] = useState<PackageDialogState>({
+    open: false,
+    userId: null,
+    userData: {
+      package_name: "free",
+      max_daily_sessions: 10,
+      max_monthly_sessions: 100,
+      max_messages_per_session: 10,
+    },
+  });
+  const [editUserDialog, setEditUserDialog] = useState<EditUserDialogState>({
+    open: false,
+    userId: null,
+    userData: {
+      role: "user",
+      package_name: "free",
+      max_daily_sessions: 10,
+      max_monthly_sessions: 100,
+      max_messages_per_session: 10,
+    },
+  });
 
   const loadUsers = async () => {
     try {
@@ -74,20 +131,6 @@ const UsersList: React.FC = () => {
     setPage(value);
   };
 
-  const handleStatusChange = async (userId: string, currentRole: string) => {
-    try {
-      const newRole = currentRole === "user" ? "admin" : "user";
-      await userService.updateUser(userId, { role: newRole });
-      await loadUsers(); // Refresh the list
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Kullanıcı rolü güncellenirken bir hata oluştu"
-      );
-    }
-  };
-
   const handleDeleteClick = (userId: string) => {
     setUserToDelete(userId);
     setDeleteDialogOpen(true);
@@ -108,6 +151,69 @@ const UsersList: React.FC = () => {
           : "Kullanıcı silinirken bir hata oluştu"
       );
     }
+  };
+
+  const handlePackageClick = (user: User) => {
+    setPackageDialog({
+      open: true,
+      userId: user.id,
+      userData: {
+        package_name: user.package_name || "free",
+        max_daily_sessions: user.max_daily_sessions || 10,
+        max_monthly_sessions: user.max_monthly_sessions || 100,
+        max_messages_per_session: user.max_messages_per_session || 10,
+      },
+    });
+  };
+
+  const handlePackageChange = async () => {
+    if (!packageDialog.userId) return;
+
+    try {
+      await userService.updateUser(packageDialog.userId, packageDialog.userData);
+      await loadUsers();
+      setPackageDialog((prev) => ({ ...prev, open: false }));
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Paket bilgileri güncellenirken bir hata oluştu"
+      );
+    }
+  };
+
+  const handleEditClick = (user: User) => {
+    setEditUserDialog({
+      open: true,
+      userId: user.id,
+      userData: {
+        role: user.role,
+        package_name: user.package_name || "free",
+        max_daily_sessions: user.max_daily_sessions || 10,
+        max_monthly_sessions: user.max_monthly_sessions || 100,
+        max_messages_per_session: user.max_messages_per_session || 10,
+      },
+    });
+  };
+
+  const handleEditDialogSave = async () => {
+    if (!editUserDialog.userId) return;
+
+    try {
+      await userService.updateUser(editUserDialog.userId, editUserDialog.userData);
+      await loadUsers();
+      setEditUserDialog((prev) => ({ ...prev, open: false }));
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Kullanıcı bilgileri güncellenirken bir hata oluştu"
+      );
+    }
+  };
+
+  const getPackageLabel = (packageName?: string) => {
+    return PACKAGE_OPTIONS.find((p) => p.value === packageName)?.label || "Ücretsiz";
   };
 
   if (loading) {
@@ -145,6 +251,11 @@ const UsersList: React.FC = () => {
               <TableCell>
                 <Typography variant="subtitle2" fontWeight={600}>
                   Rol
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="subtitle2" fontWeight={600}>
+                  Paket
                 </Typography>
               </TableCell>
               <TableCell>
@@ -204,22 +315,51 @@ const UsersList: React.FC = () => {
                 <TableCell>
                   <Chip
                     icon={
-                      user.role === "admin" ? (
+                      user.role === "superadmin" ? (
                         <AdminIcon fontSize="small" />
+                      ) : user.role === "admin" ? (
+                        <AdminIcon fontSize="small" />
+                      ) : user.role === "editor" ? (
+                        <EditIcon fontSize="small" />
                       ) : (
                         <UserIcon fontSize="small" />
                       )
                     }
-                    label={user.role === "admin" ? "Admin" : "Kullanıcı"}
-                    color={user.role === "admin" ? "primary" : "default"}
+                    label={
+                      user.role === "superadmin"
+                        ? "Super Admin"
+                        : user.role === "admin"
+                        ? "Admin"
+                        : user.role === "editor"
+                        ? "Editör"
+                        : "Kullanıcı"
+                    }
+                    color={
+                      user.role === "superadmin"
+                        ? "error"
+                        : user.role === "admin"
+                        ? "primary"
+                        : user.role === "editor"
+                        ? "info"
+                        : "default"
+                    }
                     size="small"
-                    onClick={() => handleStatusChange(user.id, user.role)}
-                    sx={{
-                      fontWeight: 500,
-                      "&:hover": {
-                        opacity: 0.9,
-                      },
-                    }}
+                    sx={{ fontWeight: 500 }}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Chip
+                    icon={<PackageIcon fontSize="small" />}
+                    label={getPackageLabel(user.package_name)}
+                    color={
+                      user.package_name === "pro"
+                        ? "success"
+                        : user.package_name === "basic"
+                        ? "info"
+                        : "default"
+                    }
+                    size="small"
+                    sx={{ fontWeight: 500 }}
                   />
                 </TableCell>
                 <TableCell>
@@ -230,22 +370,48 @@ const UsersList: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   <div className={styles.actions}>
-                    <IconButton
-                      size="small"
-                      onClick={() => handleStatusChange(user.id, user.role)}
-                      disabled={user.id === currentUser?.id}
-                      color="primary"
-                    >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      color="error"
-                      onClick={() => handleDeleteClick(user.id)}
-                      disabled={user.id === currentUser?.id}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
+                    <Tooltip title="Düzenle">
+                      {user.id === currentUser?.id ? (
+                        <span>
+                          <IconButton
+                            size="small"
+                            disabled
+                            color="primary"
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </span>
+                      ) : (
+                        <IconButton
+                          size="small"
+                          onClick={() => handleEditClick(user)}
+                          color="primary"
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                    </Tooltip>
+                    <Tooltip title="Sil">
+                      {user.id === currentUser?.id ? (
+                        <span>
+                          <IconButton
+                            size="small"
+                            disabled
+                            color="error"
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </span>
+                      ) : (
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => handleDeleteClick(user.id)}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                    </Tooltip>
                   </div>
                 </TableCell>
               </TableRow>
@@ -302,6 +468,271 @@ const UsersList: React.FC = () => {
             }}
           >
             Sil
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={packageDialog.open}
+        onClose={() => setPackageDialog((prev) => ({ ...prev, open: false }))}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          elevation: 0,
+          sx: {
+            borderRadius: 2,
+            p: 1,
+          },
+        }}
+      >
+        <DialogTitle>
+          <Typography variant="h6" fontWeight={600}>
+            Paket ve Limit Ayarları
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Grid container spacing={3} sx={{ mt: 1 }}>
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <InputLabel id="package-select-label">Paket</InputLabel>
+                <Select
+                  labelId="package-select-label"
+                  value={packageDialog.userData.package_name}
+                  label="Paket"
+                  onChange={(e) =>
+                    setPackageDialog((prev) => ({
+                      ...prev,
+                      userData: { ...prev.userData, package_name: e.target.value },
+                    }))
+                  }
+                >
+                  {PACKAGE_OPTIONS.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Günlük Oturum Limiti"
+                type="number"
+                value={packageDialog.userData.max_daily_sessions}
+                onChange={(e) =>
+                  setPackageDialog((prev) => ({
+                    ...prev,
+                    userData: {
+                      ...prev.userData,
+                      max_daily_sessions: parseInt(e.target.value) || 0,
+                    },
+                  }))
+                }
+                InputProps={{ inputProps: { min: -1 } }}
+                helperText="-1 = Limitsiz"
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Aylık Oturum Limiti"
+                type="number"
+                value={packageDialog.userData.max_monthly_sessions}
+                onChange={(e) =>
+                  setPackageDialog((prev) => ({
+                    ...prev,
+                    userData: {
+                      ...prev.userData,
+                      max_monthly_sessions: parseInt(e.target.value) || 0,
+                    },
+                  }))
+                }
+                InputProps={{ inputProps: { min: -1 } }}
+                helperText="-1 = Limitsiz"
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Oturum Başı Mesaj Limiti"
+                type="number"
+                value={packageDialog.userData.max_messages_per_session}
+                onChange={(e) =>
+                  setPackageDialog((prev) => ({
+                    ...prev,
+                    userData: {
+                      ...prev.userData,
+                      max_messages_per_session: parseInt(e.target.value) || 0,
+                    },
+                  }))
+                }
+                InputProps={{ inputProps: { min: -1 } }}
+                helperText="-1 = Limitsiz"
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setPackageDialog((prev) => ({ ...prev, open: false }))}
+            sx={{ textTransform: "none" }}
+          >
+            İptal
+          </Button>
+          <Button
+            onClick={handlePackageChange}
+            color="primary"
+            variant="contained"
+            sx={{
+              textTransform: "none",
+              fontWeight: 500,
+            }}
+          >
+            Kaydet
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={editUserDialog.open}
+        onClose={() => setEditUserDialog((prev) => ({ ...prev, open: false }))}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          elevation: 0,
+          sx: {
+            borderRadius: 2,
+            p: 1,
+          },
+        }}
+      >
+        <DialogTitle>
+          <Typography variant="h6" fontWeight={600}>
+            Kullanıcı Düzenle
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Grid container spacing={3} sx={{ mt: 1 }}>
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <InputLabel id="role-select-label">Rol</InputLabel>
+                <Select
+                  labelId="role-select-label"
+                  value={editUserDialog.userData.role}
+                  label="Rol"
+                  onChange={(e) =>
+                    setEditUserDialog((prev) => ({
+                      ...prev,
+                      userData: { ...prev.userData, role: e.target.value as "user" | "editor" | "admin" | "superadmin" },
+                    }))
+                  }
+                >
+                  <MenuItem value="user">Kullanıcı</MenuItem>
+                  <MenuItem value="editor">Editör</MenuItem>
+                  <MenuItem value="admin">Admin</MenuItem>
+                  <MenuItem value="superadmin">Super Admin</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <InputLabel id="package-select-label">Paket</InputLabel>
+                <Select
+                  labelId="package-select-label"
+                  value={editUserDialog.userData.package_name}
+                  label="Paket"
+                  onChange={(e) =>
+                    setEditUserDialog((prev) => ({
+                      ...prev,
+                      userData: { ...prev.userData, package_name: e.target.value },
+                    }))
+                  }
+                >
+                  {PACKAGE_OPTIONS.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Günlük Oturum Limiti"
+                type="number"
+                value={editUserDialog.userData.max_daily_sessions}
+                onChange={(e) =>
+                  setEditUserDialog((prev) => ({
+                    ...prev,
+                    userData: {
+                      ...prev.userData,
+                      max_daily_sessions: parseInt(e.target.value) || 0,
+                    },
+                  }))
+                }
+                InputProps={{ inputProps: { min: -1 } }}
+                helperText="-1 = Limitsiz"
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Aylık Oturum Limiti"
+                type="number"
+                value={editUserDialog.userData.max_monthly_sessions}
+                onChange={(e) =>
+                  setEditUserDialog((prev) => ({
+                    ...prev,
+                    userData: {
+                      ...prev.userData,
+                      max_monthly_sessions: parseInt(e.target.value) || 0,
+                    },
+                  }))
+                }
+                InputProps={{ inputProps: { min: -1 } }}
+                helperText="-1 = Limitsiz"
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Oturum Başı Mesaj Limiti"
+                type="number"
+                value={editUserDialog.userData.max_messages_per_session}
+                onChange={(e) =>
+                  setEditUserDialog((prev) => ({
+                    ...prev,
+                    userData: {
+                      ...prev.userData,
+                      max_messages_per_session: parseInt(e.target.value) || 0,
+                    },
+                  }))
+                }
+                InputProps={{ inputProps: { min: -1 } }}
+                helperText="-1 = Limitsiz"
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setEditUserDialog((prev) => ({ ...prev, open: false }))}
+            sx={{ textTransform: "none" }}
+          >
+            İptal
+          </Button>
+          <Button
+            onClick={handleEditDialogSave}
+            color="primary"
+            variant="contained"
+            sx={{
+              textTransform: "none",
+              fontWeight: 500,
+            }}
+          >
+            Kaydet
           </Button>
         </DialogActions>
       </Dialog>

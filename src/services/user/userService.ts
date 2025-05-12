@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { InternalAxiosRequestConfig, AxiosResponse } from "axios";
 import { tokenStorage } from "../../utils/tokenStorage";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
@@ -13,7 +13,7 @@ const api = axios.create({
 });
 
 // Add auth token to all requests
-api.interceptors.request.use((config) => {
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const tokens = tokenStorage.getTokens();
   if (tokens?.token && config.headers) {
     config.headers["Authorization"] = `Bearer ${tokens.token}`;
@@ -23,7 +23,7 @@ api.interceptors.request.use((config) => {
 
 // Add response interceptor for better error handling
 api.interceptors.response.use(
-  (response) => response,
+  (response: AxiosResponse) => response,
   async (error) => {
     if (error.response?.status === 401) {
       // Token expired, try to refresh
@@ -58,6 +58,10 @@ export interface User {
   display_name: string;
   role: "user" | "editor" | "admin" | "superadmin";
   created_at: string;
+  package_name?: string;
+  max_daily_sessions?: number;
+  max_monthly_sessions?: number;
+  max_messages_per_session?: number;
   metadata?: {
     avatar_url?: string;
     email_verified?: boolean;
@@ -90,18 +94,12 @@ export const userService = {
 
   async updateUser(userId: string, userData: Partial<User>): Promise<User> {
     try {
-      // If we're updating the role, use the specific role update endpoint
-      if ('role' in userData) {
-        const { data } = await api.put<User>(
-          `/api/v1/admin/users/${userId}/role`,
-          { role: userData.role }
-        );
-        return data;
-      }
-
-      // For other user data updates, use the general update endpoint
-      const { data } = await api.put<User>(`/api/v1/users/${userId}`, userData);
-      return data;
+      // Tüm güncellemeleri tek endpoint üzerinden yapıyoruz
+      const { data } = await api.put<{ data: User }>(
+        `/api/users/${userId}`,
+        userData
+      );
+      return data.data;
     } catch (error: any) {
       throw new Error(
         error.response?.data?.message || "Kullanıcı güncellenemedi"
@@ -122,23 +120,12 @@ export const userService = {
     email?: string;
     phone?: string;
   }): Promise<User> {
-    const tokens = tokenStorage.getTokens();
-    if (!tokens?.token) {
-      throw new Error("No token found");
-    }
-
     try {
-      const response = await axios.put<User>(
-        `${API_URL}/api/user/profile`,
-        data,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${tokens.token}`,
-          },
-        }
+      const response = await api.put<{ data: User }>(
+        `/api/user/profile`,
+        data
       );
-      return response.data;
+      return response.data.data;
     } catch (error: any) {
       if (error.response) {
         throw new Error(error.response.data.message || "Profil güncellenemedi");
