@@ -59,24 +59,26 @@ const Login = () => {
       setIsSubmitting(true);
       setLoginError(null);
       await login(data.email, data.password);
-      toast.success("Başarıyla giriş yaptınız!");
+      toast.success("Giriş başarılı!");
       navigate(from, { replace: true });
     } catch (error: any) {
       console.error("Login error:", error);
-      
       // API'den gelen özel hata durumları
       if (error.message.includes("E-posta adresi veya şifre hatalı")) {
         setLoginError("E-posta adresi veya şifre hatalı");
         setError("password", { message: "Şifrenizi kontrol edin" });
       } else if (error.message.includes("hesap kilitlendi")) {
-        setLoginError("Çok fazla başarısız giriş denemesi. Lütfen bir süre bekleyin.");
+        setLoginError(
+          "Çok fazla başarısız giriş denemesi. Lütfen bir süre bekleyin."
+        );
       } else if (error.message.includes("doğrulanmamış")) {
-        setLoginError("E-posta adresinizi doğrulamanız gerekiyor. Lütfen e-postanızı kontrol edin.");
+        setLoginError(
+          "E-posta adresinizi doğrulamanız gerekiyor. Lütfen e-postanızı kontrol edin."
+        );
       } else {
         setLoginError(error.message || "Giriş yapılırken bir hata oluştu");
       }
-      
-      toast.error(error.message);
+      toast.error(error.message || "Giriş yapılırken bir hata oluştu");
     } finally {
       setIsSubmitting(false);
     }
@@ -189,9 +191,9 @@ const Login = () => {
         <div className={styles.footer}>
           <Typography variant="body2">
             Hesabınız yok mu?{" "}
-            <MuiLink 
-              component={Link} 
-              to="/signup" 
+            <MuiLink
+              component={Link}
+              to="/signup"
               className={styles.link}
               tabIndex={isSubmitting ? -1 : 0}
             >

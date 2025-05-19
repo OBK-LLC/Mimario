@@ -104,12 +104,12 @@ const Signup = () => {
       setIsSubmitting(true);
       setError(null);
       await register(data.email, data.password, { full_name: data.fullName });
-      toast.success("Kayıt işlemi başarılı! Hoş geldiniz.");
-      navigate("/");
+      toast.success("Kayıt işlemi başarılı! Giriş yapabilirsiniz.");
+      navigate("/login");
     } catch (error: any) {
-      console.error("Registration error:", error);
-      setError(error.message);
-      toast.error(error.message);
+      console.error("Signup error:", error);
+      setError(error.message || "Kayıt olurken bir hata oluştu");
+      toast.error(error.message || "Kayıt olurken bir hata oluştu");
     } finally {
       setIsSubmitting(false);
     }
@@ -210,7 +210,8 @@ const Signup = () => {
                         sx={{
                           backgroundColor: "rgba(0,0,0,0.1)",
                           "& .MuiLinearProgress-bar": {
-                            backgroundColor: getPasswordStrengthColor(passwordStrength),
+                            backgroundColor:
+                              getPasswordStrengthColor(passwordStrength),
                           },
                         }}
                       />
@@ -242,11 +243,17 @@ const Signup = () => {
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
                           edge="end"
                           disabled={isSubmitting}
                         >
-                          {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                          {showConfirmPassword ? (
+                            <VisibilityOff />
+                          ) : (
+                            <Visibility />
+                          )}
                         </IconButton>
                       </InputAdornment>
                     ),

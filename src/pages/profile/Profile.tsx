@@ -12,13 +12,13 @@ import {
   Avatar,
   Snackbar,
 } from "@mui/material";
-import { 
-  Visibility, 
-  VisibilityOff, 
+import {
+  Visibility,
+  VisibilityOff,
   ArrowBack,
   AccessTime as AccessTimeIcon,
   CalendarToday as CalendarTodayIcon,
-  Message as MessageIcon
+  Message as MessageIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
@@ -151,6 +151,9 @@ const Profile: React.FC = () => {
         text: "Profil güncellenirken bir hata oluştu",
         type: "error",
       });
+      showToast.error(
+        "Profil güncellenirken bir hata oluştu. Lütfen tekrar deneyin."
+      );
     }
   };
 
@@ -178,6 +181,7 @@ const Profile: React.FC = () => {
       });
     } catch (error) {
       console.error("Password change error:", error);
+      showToast.error("Şifre değiştirilemedi. Lütfen tekrar deneyin.");
     }
   };
 
@@ -246,29 +250,29 @@ const Profile: React.FC = () => {
               <Box className={styles.usageInfo}>
                 <Paper
                   sx={{
-                    width: '100%',
-                    bgcolor: 'background.paper',
+                    width: "100%",
+                    bgcolor: "background.paper",
                     borderRadius: 2,
-                    overflow: 'hidden',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    boxShadow: 1
+                    overflow: "hidden",
+                    border: "1px solid",
+                    borderColor: "divider",
+                    boxShadow: 1,
                   }}
                 >
                   <Box
                     sx={{
                       p: 3,
-                      borderBottom: '1px solid',
-                      borderColor: 'divider'
+                      borderBottom: "1px solid",
+                      borderColor: "divider",
                     }}
                   >
                     <Typography
                       variant="subtitle2"
                       sx={{
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.1em',
+                        textTransform: "uppercase",
+                        letterSpacing: "0.1em",
                         mb: 0.5,
-                        color: 'text.secondary'
+                        color: "text.secondary",
                       }}
                     >
                       PAKET BİLGİSİ
@@ -277,120 +281,143 @@ const Profile: React.FC = () => {
                       variant="h5"
                       sx={{
                         fontWeight: 700,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        color: 'text.primary'
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                        color: "text.primary",
                       }}
                     >
-                      {usageData.limits.package_name === 'free' ? 'ÜCRETSİZ' : 
-                       usageData.limits.package_name === 'pro' ? 'Profesyonel' : 
-                       usageData.limits.package_name === 'enterprise' ? 'Kurumsal' : 
-                       usageData.limits.package_name}
+                      {usageData.limits.package_name === "free"
+                        ? "ÜCRETSİZ"
+                        : usageData.limits.package_name === "pro"
+                        ? "Profesyonel"
+                        : usageData.limits.package_name === "enterprise"
+                        ? "Kurumsal"
+                        : usageData.limits.package_name}
                     </Typography>
                   </Box>
-                  
+
                   <Box sx={{ p: 3 }}>
                     {/* Günlük Oturum */}
                     <Box sx={{ mb: 3 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", mb: 1 }}
+                      >
                         <Box sx={{ mr: 1.5 }}>
-                          <AccessTimeIcon sx={{ color: 'text.primary' }} />
+                          <AccessTimeIcon sx={{ color: "text.primary" }} />
                         </Box>
                         <Typography variant="body2" color="text.primary">
                           Günlük Oturum
                         </Typography>
                       </Box>
-                      <Box sx={{ position: 'relative' }}>
+                      <Box sx={{ position: "relative" }}>
                         <Box
                           sx={{
                             height: 4,
-                            bgcolor: 'divider',
+                            bgcolor: "divider",
                             borderRadius: 1,
-                            overflow: 'hidden'
+                            overflow: "hidden",
                           }}
                         >
                           <Box
                             sx={{
-                              height: '100%',
-                              bgcolor: 'primary.main',
+                              height: "100%",
+                              bgcolor: "primary.main",
                               borderRadius: 1,
-                              width: `${Math.min((usageData.current_usage.daily_sessions_created / usageData.limits.max_daily_sessions) * 100, 100)}%`,
-                              transition: 'width 0.5s ease'
+                              width: `${Math.min(
+                                (usageData.current_usage
+                                  .daily_sessions_created /
+                                  usageData.limits.max_daily_sessions) *
+                                  100,
+                                100
+                              )}%`,
+                              transition: "width 0.5s ease",
                             }}
                           />
                         </Box>
                         <Typography
                           variant="caption"
                           sx={{
-                            position: 'absolute',
+                            position: "absolute",
                             right: 0,
-                            top: '8px',
-                            color: 'text.secondary'
+                            top: "8px",
+                            color: "text.secondary",
                           }}
                         >
-                          {usageData.current_usage.daily_sessions_created} / {usageData.limits.max_daily_sessions}
+                          {usageData.current_usage.daily_sessions_created} /{" "}
+                          {usageData.limits.max_daily_sessions}
                         </Typography>
                       </Box>
                     </Box>
 
                     {/* Aylık Oturum */}
                     <Box sx={{ mb: 3 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", mb: 1 }}
+                      >
                         <Box sx={{ mr: 1.5 }}>
-                          <CalendarTodayIcon sx={{ color: 'text.primary' }} />
+                          <CalendarTodayIcon sx={{ color: "text.primary" }} />
                         </Box>
                         <Typography variant="body2" color="text.primary">
                           Aylık Oturum
                         </Typography>
                       </Box>
-                      <Box sx={{ position: 'relative' }}>
+                      <Box sx={{ position: "relative" }}>
                         <Box
                           sx={{
                             height: 4,
-                            bgcolor: 'divider',
+                            bgcolor: "divider",
                             borderRadius: 1,
-                            overflow: 'hidden'
+                            overflow: "hidden",
                           }}
                         >
                           <Box
                             sx={{
-                              height: '100%',
-                              bgcolor: 'primary.main',
+                              height: "100%",
+                              bgcolor: "primary.main",
                               borderRadius: 1,
-                              width: `${Math.min((usageData.current_usage.monthly_sessions_created / usageData.limits.max_monthly_sessions) * 100, 100)}%`,
-                              transition: 'width 0.5s ease'
+                              width: `${Math.min(
+                                (usageData.current_usage
+                                  .monthly_sessions_created /
+                                  usageData.limits.max_monthly_sessions) *
+                                  100,
+                                100
+                              )}%`,
+                              transition: "width 0.5s ease",
                             }}
                           />
                         </Box>
                         <Typography
                           variant="caption"
                           sx={{
-                            position: 'absolute',
+                            position: "absolute",
                             right: 0,
-                            top: '8px',
-                            color: 'text.secondary'
+                            top: "8px",
+                            color: "text.secondary",
                           }}
                         >
-                          {usageData.current_usage.monthly_sessions_created} / {usageData.limits.max_monthly_sessions}
+                          {usageData.current_usage.monthly_sessions_created} /{" "}
+                          {usageData.limits.max_monthly_sessions}
                         </Typography>
                       </Box>
                     </Box>
 
                     {/* Oturum Başına Mesaj */}
                     <Box sx={{ mb: 3 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", mb: 1 }}
+                      >
                         <Box sx={{ mr: 1.5 }}>
-                          <MessageIcon sx={{ color: 'text.primary' }} />
+                          <MessageIcon sx={{ color: "text.primary" }} />
                         </Box>
                         <Typography variant="body2" color="text.primary">
                           Oturum Başına Mesaj
                         </Typography>
                       </Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
                         <Typography
                           variant="caption"
                           sx={{
-                            color: 'text.secondary'
+                            color: "text.secondary",
                           }}
                         >
                           5000
@@ -401,28 +428,28 @@ const Profile: React.FC = () => {
                 </Paper>
               </Box>
             ) : (
-              <Box 
+              <Box
                 sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  height: 250
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  height: 250,
                 }}
               >
                 <Box
                   sx={{
                     width: 40,
                     height: 40,
-                    borderRadius: '50%',
-                    border: '3px solid',
-                    borderColor: 'divider',
-                    borderTopColor: 'primary.main',
+                    borderRadius: "50%",
+                    border: "3px solid",
+                    borderColor: "divider",
+                    borderTopColor: "primary.main",
                     mb: 2,
-                    animation: 'spin 1s ease-in-out infinite',
-                    '@keyframes spin': {
+                    animation: "spin 1s ease-in-out infinite",
+                    "@keyframes spin": {
                       to: {
-                        transform: 'rotate(360deg)',
+                        transform: "rotate(360deg)",
                       },
                     },
                   }}
@@ -430,7 +457,7 @@ const Profile: React.FC = () => {
                 <Typography
                   variant="body2"
                   sx={{
-                    color: 'text.secondary'
+                    color: "text.secondary",
                   }}
                 >
                   Kullanım bilgileri yükleniyor...

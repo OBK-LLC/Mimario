@@ -33,6 +33,7 @@ import { feedbackService } from "../../services/feedback/feedbackService";
 import { AdminFeedback } from "../../types/feedback";
 import { formatDate } from "../../utils/date";
 import styles from "./feedback-list.module.css";
+import { showToast } from "../../utils/toast";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -72,6 +73,9 @@ const FeedbackList: React.FC = () => {
       setError("Geri bildirimler yüklenirken bir hata oluştu");
       setFeedbacks([]);
       setTotalPages(1);
+      showToast.error(
+        "Geri bildirimler yüklenirken bir hata oluştu. Lütfen tekrar deneyin."
+      );
     } finally {
       setLoading(false);
     }

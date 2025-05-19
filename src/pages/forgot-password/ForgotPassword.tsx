@@ -46,12 +46,10 @@ const ForgotPassword = () => {
       setError(null);
       setSuccess(null);
       await forgotPassword(data.email);
-      setSuccess(
-        "Şifre sıfırlama bağlantısı e-posta adresinize gönderildi. Lütfen e-postanızı kontrol edin."
-      );
+      setSuccess("Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.");
     } catch (error: any) {
-      console.error("Password reset error:", error);
-      setError(error.message);
+      console.error("Forgot password error:", error);
+      setError(error.message || "Şifre sıfırlanırken bir hata oluştu");
     } finally {
       setIsSubmitting(false);
     }

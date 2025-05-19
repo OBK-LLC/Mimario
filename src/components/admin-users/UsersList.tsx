@@ -40,6 +40,7 @@ import {
 import styles from "./users-list.module.css";
 import userService, { User } from "../../services/user/userService";
 import { useAuth } from "../../contexts/AuthContext";
+import { showToast } from "../../utils/toast";
 
 const ITEMS_PER_PAGE = 10;
 const PACKAGE_OPTIONS = [
@@ -144,6 +145,7 @@ const UsersList: React.FC = () => {
       await loadUsers();
       setDeleteDialogOpen(false);
       setUserToDelete(null);
+      showToast.success("Kullanıcı başarıyla silindi!");
     } catch (err) {
       setError(
         err instanceof Error
@@ -170,9 +172,13 @@ const UsersList: React.FC = () => {
     if (!packageDialog.userId) return;
 
     try {
-      await userService.updateUser(packageDialog.userId, packageDialog.userData);
+      await userService.updateUser(
+        packageDialog.userId,
+        packageDialog.userData
+      );
       await loadUsers();
       setPackageDialog((prev) => ({ ...prev, open: false }));
+      showToast.success("Paket bilgileri başarıyla güncellendi!");
     } catch (err) {
       setError(
         err instanceof Error
@@ -200,9 +206,13 @@ const UsersList: React.FC = () => {
     if (!editUserDialog.userId) return;
 
     try {
-      await userService.updateUser(editUserDialog.userId, editUserDialog.userData);
+      await userService.updateUser(
+        editUserDialog.userId,
+        editUserDialog.userData
+      );
       await loadUsers();
       setEditUserDialog((prev) => ({ ...prev, open: false }));
+      showToast.success("Kullanıcı bilgileri başarıyla güncellendi!");
     } catch (err) {
       setError(
         err instanceof Error
@@ -213,7 +223,9 @@ const UsersList: React.FC = () => {
   };
 
   const getPackageLabel = (packageName?: string) => {
-    return PACKAGE_OPTIONS.find((p) => p.value === packageName)?.label || "Ücretsiz";
+    return (
+      PACKAGE_OPTIONS.find((p) => p.value === packageName)?.label || "Ücretsiz"
+    );
   };
 
   if (loading) {
@@ -371,13 +383,10 @@ const UsersList: React.FC = () => {
                 <TableCell>
                   <div className={styles.actions}>
                     <Tooltip title="Düzenle">
-                      {user.id === currentUser?.id && currentUser.role !== "superadmin" ? (
+                      {user.id === currentUser?.id &&
+                      currentUser.role !== "superadmin" ? (
                         <span>
-                          <IconButton
-                            size="small"
-                            disabled
-                            color="primary"
-                          >
+                          <IconButton size="small" disabled color="primary">
                             <EditIcon fontSize="small" />
                           </IconButton>
                         </span>
@@ -394,11 +403,7 @@ const UsersList: React.FC = () => {
                     <Tooltip title="Sil">
                       {user.id === currentUser?.id ? (
                         <span>
-                          <IconButton
-                            size="small"
-                            disabled
-                            color="error"
-                          >
+                          <IconButton size="small" disabled color="error">
                             <DeleteIcon fontSize="small" />
                           </IconButton>
                         </span>
@@ -502,7 +507,10 @@ const UsersList: React.FC = () => {
                   onChange={(e) =>
                     setPackageDialog((prev) => ({
                       ...prev,
-                      userData: { ...prev.userData, package_name: e.target.value },
+                      userData: {
+                        ...prev.userData,
+                        package_name: e.target.value,
+                      },
                     }))
                   }
                 >
@@ -575,7 +583,9 @@ const UsersList: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button
-            onClick={() => setPackageDialog((prev) => ({ ...prev, open: false }))}
+            onClick={() =>
+              setPackageDialog((prev) => ({ ...prev, open: false }))
+            }
             sx={{ textTransform: "none" }}
           >
             İptal
@@ -624,7 +634,14 @@ const UsersList: React.FC = () => {
                   onChange={(e) =>
                     setEditUserDialog((prev) => ({
                       ...prev,
-                      userData: { ...prev.userData, role: e.target.value as "user" | "editor" | "admin" | "superadmin" },
+                      userData: {
+                        ...prev.userData,
+                        role: e.target.value as
+                          | "user"
+                          | "editor"
+                          | "admin"
+                          | "superadmin",
+                      },
                     }))
                   }
                 >
@@ -645,7 +662,10 @@ const UsersList: React.FC = () => {
                   onChange={(e) =>
                     setEditUserDialog((prev) => ({
                       ...prev,
-                      userData: { ...prev.userData, package_name: e.target.value },
+                      userData: {
+                        ...prev.userData,
+                        package_name: e.target.value,
+                      },
                     }))
                   }
                 >
@@ -718,7 +738,9 @@ const UsersList: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button
-            onClick={() => setEditUserDialog((prev) => ({ ...prev, open: false }))}
+            onClick={() =>
+              setEditUserDialog((prev) => ({ ...prev, open: false }))
+            }
             sx={{ textTransform: "none" }}
           >
             İptal

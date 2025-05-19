@@ -42,10 +42,11 @@ const FileManager: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [fileToDelete, setFileToDelete] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchDocuments = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
       const documents = await FileService.getDocuments();
       setFiles(
         documents.map((doc) => ({
@@ -54,9 +55,12 @@ const FileManager: React.FC = () => {
           size: doc.size || 0,
         }))
       );
-    } catch (error) {
+      setError(null);
+    } catch (err) {
+      console.error("File fetch error:", err);
+      setError("Dosyalar yüklenirken bir hata oluştu");
       showToast.error(
-        error instanceof Error ? error.message : "Dosyalar yüklenirken bir hata oluştu"
+        "Dosyalar yüklenirken bir hata oluştu. Lütfen tekrar deneyin."
       );
     } finally {
       setLoading(false);
@@ -67,7 +71,9 @@ const FileManager: React.FC = () => {
     fetchDocuments();
   }, []);
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const files = event.target.files;
     if (!files?.length) return;
 
@@ -75,10 +81,12 @@ const FileManager: React.FC = () => {
       setLoading(true);
       await FileService.uploadFiles(Array.from(files));
       await fetchDocuments();
-      showToast.success("Dosya başarıyla yüklendi");
+      showToast.success("Dosya başarıyla yüklendi!");
     } catch (error) {
       showToast.error(
-        error instanceof Error ? error.message : "Dosya yüklenirken bir hata oluştu"
+        error instanceof Error
+          ? error.message
+          : "Dosya yüklenirken bir hata oluştu"
       );
     } finally {
       setLoading(false);
@@ -104,20 +112,27 @@ const FileManager: React.FC = () => {
     try {
       setLoading(true);
       await FileService.deleteDocument(fileToDelete);
-      setFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileToDelete));
+      setFiles((prevFiles) =>
+        prevFiles.filter((file) => file.id !== fileToDelete)
+      );
       setDeleteDialogOpen(false);
       setFileToDelete(null);
-      showToast.success("Dosya başarıyla silindi");
+      showToast.success("Dosya başarıyla silindi!");
     } catch (error) {
       showToast.error(
-        error instanceof Error ? error.message : "Dosya silinirken bir hata oluştu"
+        error instanceof Error
+          ? error.message
+          : "Dosya silinirken bir hata oluştu"
       );
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+  const handlePageChange = (
+    event: React.ChangeEvent<unknown>,
+    value: number
+  ) => {
     setPage(value);
   };
 

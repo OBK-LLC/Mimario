@@ -29,6 +29,7 @@ import { useSession } from "./hooks/useSession";
 import LoadingScreen from "./components/loading-screen/LoadingScreen";
 import { AdminGuard } from "./components/guards/AdminGuard";
 import { normalizeMessage } from "./services/session/sessionService";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const THEME_MODE_KEY = "mimario-theme-mode";
 
@@ -123,6 +124,7 @@ function AppContent() {
         setSelectedChatId(response.data.id);
         setMessages((response.data.messages || []).map(normalizeMessage));
         navigate(`/chat/${response.data.id}`);
+        toast.success("Yeni sohbet oluşturuldu");
       } else {
         throw new Error("Sohbet oluşturulamadı");
       }
@@ -173,6 +175,7 @@ function AppContent() {
           navigate("/");
         }
       }
+      toast.success("Sohbet başarıyla silindi");
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -185,6 +188,7 @@ function AppContent() {
   const handleEditChatTitle = async (chatId: string, newTitle: string) => {
     try {
       await updateSession(chatId, newTitle);
+      toast.success("Sohbet başlığı güncellendi");
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -431,7 +435,9 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppContent />
+        <ErrorBoundary>
+          <AppContent />
+        </ErrorBoundary>
       </AuthProvider>
     </BrowserRouter>
   );
