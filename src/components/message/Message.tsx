@@ -1,16 +1,26 @@
 import React, { useState } from "react";
-import { Paper, Typography, Box, IconButton, Collapse, List, ListItem } from "@mui/material";
-import { 
-  ThumbUp, 
-  ThumbDown, 
-  ContentCopy, 
+import {
+  Paper,
+  Typography,
+  Box,
+  IconButton,
+  Collapse,
+  List,
+  ListItem,
+} from "@mui/material";
+import {
+  ThumbUp,
+  ThumbDown,
+  ContentCopy,
   ExpandMore as ExpandMoreIcon,
-  ExpandLess as ExpandLessIcon 
+  ExpandLess as ExpandLessIcon,
 } from "@mui/icons-material";
 import { MessageProps } from "../../types/chat";
 import { useTheme } from "@mui/material/styles";
 import styles from "./message.module.css";
 import FeedbackModal from "../feedback-modal/FeedbackModal";
+import { showToast } from "../../utils/toast";
+import ReactMarkdown from "react-markdown";
 
 export const Message: React.FC<MessageProps> = ({
   message,
@@ -23,16 +33,30 @@ export const Message: React.FC<MessageProps> = ({
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [isPositiveFeedback, setIsPositiveFeedback] = useState(true);
   const [showSources, setShowSources] = useState(false);
+  const [feedbackGiven, setFeedbackGiven] = useState<"positive" | null>(null);
   const sources = message.sources || [];
   const hasSources = isAI && sources.length > 0;
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(message.content);
+    const mdContent = `\n\n\`\`\`\n${message.content}\n\`\`\``;
+    navigator.clipboard.writeText(mdContent);
+    showToast.success("Panoya kopyalandı!");
   };
 
   const handleFeedback = (isPositive: boolean) => {
     setIsPositiveFeedback(isPositive);
     setFeedbackModalOpen(true);
+  };
+
+  const handleFeedbackModalClose = () => {
+    setFeedbackModalOpen(false);
+  };
+
+  const handleFeedbackModalAfterSubmit = (isPositive: boolean) => {
+    if (isPositive) {
+      setFeedbackGiven("positive");
+    }
+    setFeedbackModalOpen(false);
   };
 
   return (
@@ -50,15 +74,24 @@ export const Message: React.FC<MessageProps> = ({
           backgroundColor: isAI ? "background.paper" : "primary.main",
         }}
       >
-        <Typography
-          variant="body1"
-          className={styles.messageText}
-          sx={{
-            color: isAI ? "text.primary" : "primary.contrastText",
-          }}
-        >
-          {message.content}
-        </Typography>
+        {isAI ? (
+          <div
+            className={styles.messageText}
+            style={{ paddingLeft: 16, paddingRight: 16, marginBottom: 16 }}
+          >
+            <ReactMarkdown>{message.content}</ReactMarkdown>
+          </div>
+        ) : (
+          <Typography
+            variant="body1"
+            className={styles.messageText}
+            sx={{
+              color: isAI ? "text.primary" : "primary.contrastText",
+            }}
+          >
+            {message.content}
+          </Typography>
+        )}
         <Typography
           variant="caption"
           className={`${styles.timestamp} ${
@@ -70,6 +103,7 @@ export const Message: React.FC<MessageProps> = ({
               : isDarkMode
               ? "rgba(0, 0, 0, 0.7)"
               : "rgba(255, 255, 255, 0.85)",
+            ...(isAI && { display: "block", textAlign: "right" }),
           }}
         >
           {new Date(message.timestamp).toLocaleTimeString()}
@@ -77,20 +111,20 @@ export const Message: React.FC<MessageProps> = ({
 
         {hasSources && (
           <>
-            <Box 
-              sx={{ 
-                mt: 2, 
-                pt: 2, 
-                borderTop: 1, 
-                borderColor: 'divider',
-                display: 'flex',
-                alignItems: 'center',
-                cursor: 'pointer'
+            <Box
+              sx={{
+                mt: 2,
+                pt: 2,
+                borderTop: 1,
+                borderColor: "divider",
+                display: "flex",
+                alignItems: "center",
+                cursor: "pointer",
               }}
               onClick={() => setShowSources(!showSources)}
             >
-              <Typography 
-                variant="body2" 
+              <Typography
+                variant="body2"
                 color="text.secondary"
                 sx={{ flex: 1 }}
               >
@@ -102,19 +136,19 @@ export const Message: React.FC<MessageProps> = ({
             <Collapse in={showSources}>
               <List sx={{ mt: 1, pb: 0 }}>
                 {sources.map((source, index) => {
-                  const sourceKey = source.id ? 
-                    `${message.id}-${source.id}` : 
-                    `${message.id}-source-${index}`;
-                    
+                  const sourceKey = source.id
+                    ? `${message.id}-${source.id}`
+                    : `${message.id}-source-${index}`;
+
                   return (
-                    <ListItem 
+                    <ListItem
                       key={sourceKey}
-                      sx={{ 
-                        px: 2, 
+                      sx={{
+                        px: 2,
                         py: 1,
-                        backgroundColor: 'action.hover',
+                        backgroundColor: "action.hover",
                         borderRadius: 1,
-                        mb: 1
+                        mb: 1,
                       }}
                     >
                       <Box>
@@ -140,6 +174,13 @@ export const Message: React.FC<MessageProps> = ({
             className={styles.actionButton}
             onClick={() => handleFeedback(true)}
             size="small"
+            disabled={feedbackGiven === "positive"}
+            sx={{
+              color:
+                feedbackGiven === "positive"
+                  ? theme.palette.success.main
+                  : undefined,
+            }}
           >
             <ThumbUp fontSize="small" />
           </IconButton>
@@ -161,7 +202,7 @@ export const Message: React.FC<MessageProps> = ({
       )}
       <FeedbackModal
         open={feedbackModalOpen}
-        onClose={() => setFeedbackModalOpen(false)}
+        onClose={handleFeedbackModalClose}
         isPositive={isPositiveFeedback}
         sessionId={sessionId}
         messageId={message.id}
@@ -169,6 +210,7 @@ export const Message: React.FC<MessageProps> = ({
         messageRole={message.sender}
         previousMessageId={previousMessage?.id}
         previousMessageContent={previousMessage?.content}
+        onAfterSubmit={handleFeedbackModalAfterSubmit}
       />
     </Box>
   );

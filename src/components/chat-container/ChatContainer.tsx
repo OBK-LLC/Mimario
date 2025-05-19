@@ -36,9 +36,9 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   }, [messages, isGenerating]);
 
   const exampleQuestions = [
-    "Yapı ruhsatı için gerekli belgeler nelerdir?",
-    "Yangın merdivenine, ne zaman ihtiyaç duyulur?",
-    "Bina yüksekliği hesaplama yöntemi nedir?",
+    "Yeni bir bina projesinde kaç adet otopark yeri ayırmam gerekiyor ve bu yerlerin ölçüleri ne olmalı?",
+    "Mimari projelerde ahşap malzeme kullanırken hangi tasarım ve hesap kurallarına dikkat etmeliyim?",
+    "Bir bina projesinde yangın güvenliği için sağlamam gereken zorunlu tedbirler nelerdir?",
   ];
 
   const containerVariants = {

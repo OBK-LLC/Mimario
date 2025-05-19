@@ -26,6 +26,7 @@ interface FeedbackModalProps {
   messageRole: string;
   previousMessageId?: string;
   previousMessageContent?: string;
+  onAfterSubmit?: (isPositive: boolean) => void;
 }
 
 const FeedbackModal: React.FC<FeedbackModalProps> = ({
@@ -38,6 +39,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
   messageRole,
   previousMessageId,
   previousMessageContent,
+  onAfterSubmit,
 }) => {
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,7 +63,11 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
 
       if (response.success) {
         showToast.success("Geribildiriminiz için teşekkürler!");
-        handleClose();
+        if (onAfterSubmit) {
+          onAfterSubmit(isPositive);
+        } else {
+          handleClose();
+        }
       } else {
         showToast.error("Geribildirim gönderilemedi. Lütfen tekrar deneyin.");
       }
