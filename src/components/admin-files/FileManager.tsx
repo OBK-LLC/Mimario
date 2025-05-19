@@ -43,6 +43,8 @@ const FileManager: React.FC = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [fileToDelete, setFileToDelete] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchDocuments = async () => {
     setLoading(true);
@@ -78,6 +80,7 @@ const FileManager: React.FC = () => {
     if (!files?.length) return;
 
     try {
+      setIsUploading(true);
       setLoading(true);
       await FileService.uploadFiles(Array.from(files));
       await fetchDocuments();
@@ -89,6 +92,7 @@ const FileManager: React.FC = () => {
           : "Dosya yüklenirken bir hata oluştu"
       );
     } finally {
+      setIsUploading(false);
       setLoading(false);
     }
   };
@@ -110,6 +114,7 @@ const FileManager: React.FC = () => {
     if (!fileToDelete) return;
 
     try {
+      setIsDeleting(true);
       setLoading(true);
       await FileService.deleteDocument(fileToDelete);
       setFiles((prevFiles) =>
@@ -125,6 +130,7 @@ const FileManager: React.FC = () => {
           : "Dosya silinirken bir hata oluştu"
       );
     } finally {
+      setIsDeleting(false);
       setLoading(false);
     }
   };
@@ -185,8 +191,28 @@ const FileManager: React.FC = () => {
               textTransform: "none",
               fontWeight: 500,
             }}
+            disabled={isUploading}
           >
-            Dosya Yükle
+            {isUploading ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "100%",
+                }}
+              >
+                <CircularProgress size={20} sx={{ mr: 1.5, color: "#fff" }} />
+                <Typography
+                  variant="body2"
+                  sx={{ color: "#fff", fontWeight: 500 }}
+                >
+                  Yükleniyor...
+                </Typography>
+              </Box>
+            ) : (
+              "Dosya Yükle"
+            )}
             <input
               type="file"
               hidden
@@ -316,8 +342,28 @@ const FileManager: React.FC = () => {
             color="error"
             variant="contained"
             sx={{ textTransform: "none", fontWeight: 500 }}
+            disabled={isDeleting}
           >
-            Sil
+            {isDeleting ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "100%",
+                }}
+              >
+                <CircularProgress size={20} sx={{ mr: 1.5, color: "#fff" }} />
+                <Typography
+                  variant="body2"
+                  sx={{ color: "#fff", fontWeight: 500 }}
+                >
+                  Siliniyor...
+                </Typography>
+              </Box>
+            ) : (
+              "Sil"
+            )}
           </Button>
         </DialogActions>
       </Dialog>

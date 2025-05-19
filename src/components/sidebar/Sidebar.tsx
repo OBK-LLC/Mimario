@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   List,
@@ -29,6 +29,7 @@ import {
 import { SidebarProps } from "../../types/chat";
 import styles from "./sidebar.module.css";
 import CircularProgress from "@mui/material/CircularProgress";
+import { useTheme } from "@mui/material/styles";
 
 interface EditDialogProps {
   open: boolean;
@@ -44,13 +45,22 @@ const EditDialog: React.FC<EditDialogProps> = ({
   onSave,
 }) => {
   const [newTitle, setNewTitle] = useState(title);
+  const [isSaving, setIsSaving] = useState(false);
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === "dark";
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (newTitle.trim()) {
-      onSave(newTitle.trim());
+      setIsSaving(true);
+      await onSave(newTitle.trim());
+      setIsSaving(false);
       onClose();
     }
   };
+
+  useEffect(() => {
+    setNewTitle(title);
+  }, [title]);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
@@ -64,22 +74,42 @@ const EditDialog: React.FC<EditDialogProps> = ({
           value={newTitle}
           onChange={(e) => setNewTitle(e.target.value)}
           onKeyPress={(e) => {
-            if (e.key === "Enter") {
+            if (e.key === "Enter" && !isSaving) {
               handleSave();
             }
           }}
+          disabled={isSaving}
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} startIcon={<CloseIcon />}>
+        <Button onClick={onClose} startIcon={<CloseIcon />} disabled={isSaving}>
           İptal
         </Button>
         <Button
           onClick={handleSave}
           variant="contained"
           startIcon={<SaveIcon />}
+          disabled={isSaving || !newTitle.trim()}
         >
-          Kaydet
+          {isSaving ? (
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <CircularProgress
+                size={18}
+                sx={{ mr: 1, color: isDarkMode ? "#fff" : "primary.main" }}
+              />
+              <Typography
+                variant="body2"
+                sx={{
+                  color: isDarkMode ? "#fff" : "primary.main",
+                  fontWeight: 500,
+                }}
+              >
+                Kaydediliyor...
+              </Typography>
+            </Box>
+          ) : (
+            "Kaydet"
+          )}
         </Button>
       </DialogActions>
     </Dialog>
@@ -108,12 +138,17 @@ export const Sidebar: React.FC<ExtendedSidebarProps> = ({
     title: string;
   } | null>(null);
   const [isStartingChat, setIsStartingChat] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    chatId: string | null;
+  }>({ open: false, chatId: null });
+  const [isDeleting, setIsDeleting] = useState(false);
+  const theme = useTheme();
+  const isDarkModeTheme = theme.palette.mode === "dark";
 
   const handleDelete = (e: React.MouseEvent, chatId: string) => {
     e.stopPropagation();
-    if (onDeleteChat) {
-      onDeleteChat(chatId);
-    }
+    setDeleteDialog({ open: true, chatId });
   };
 
   const handleEdit = (
@@ -124,13 +159,6 @@ export const Sidebar: React.FC<ExtendedSidebarProps> = ({
     setEditingChat(chat);
   };
 
-  const handleSaveTitle = (newTitle: string) => {
-    if (editingChat && onEditChatTitle) {
-      onEditChatTitle(editingChat.id, newTitle);
-    }
-    setEditingChat(null);
-  };
-
   const handleNewChat = async () => {
     setIsStartingChat(true);
     try {
@@ -138,6 +166,14 @@ export const Sidebar: React.FC<ExtendedSidebarProps> = ({
     } finally {
       setIsStartingChat(false);
     }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteDialog.chatId || !onDeleteChat) return;
+    setIsDeleting(true);
+    await onDeleteChat(deleteDialog.chatId);
+    setIsDeleting(false);
+    setDeleteDialog({ open: false, chatId: null });
   };
 
   return (
@@ -176,12 +212,15 @@ export const Sidebar: React.FC<ExtendedSidebarProps> = ({
               <CircularProgress
                 size={20}
                 thickness={4}
-                sx={{ color: isDarkMode ? "#fff" : "primary.main", mr: 1.5 }}
+                sx={{
+                  color: isDarkModeTheme ? "#fff" : "primary.main",
+                  mr: 1.5,
+                }}
               />
               <Typography
                 variant="body2"
                 sx={{
-                  color: isDarkMode ? "#fff" : "primary.main",
+                  color: isDarkModeTheme ? "#fff" : "primary.main",
                   fontWeight: 500,
                 }}
               >
@@ -294,8 +333,52 @@ export const Sidebar: React.FC<ExtendedSidebarProps> = ({
         open={!!editingChat}
         title={editingChat?.title || ""}
         onClose={() => setEditingChat(null)}
-        onSave={handleSaveTitle}
+        onSave={async (newTitle) => {
+          if (editingChat && onEditChatTitle) {
+            await onEditChatTitle(editingChat.id, newTitle);
+          }
+          setEditingChat(null);
+        }}
       />
+      <Dialog
+        open={deleteDialog.open}
+        onClose={() => setDeleteDialog({ open: false, chatId: null })}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Sohbeti Sil</DialogTitle>
+        <DialogContent>
+          <Typography>Bu sohbeti silmek istediğinize emin misiniz?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setDeleteDialog({ open: false, chatId: null })}
+            disabled={isDeleting}
+          >
+            İptal
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            color="error"
+            variant="contained"
+            disabled={isDeleting}
+          >
+            {isDeleting ? (
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <CircularProgress size={18} sx={{ mr: 1, color: "#fff" }} />
+                <Typography
+                  variant="body2"
+                  sx={{ color: "#fff", fontWeight: 500 }}
+                >
+                  Siliniyor...
+                </Typography>
+              </Box>
+            ) : (
+              "Sil"
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

@@ -14,6 +14,7 @@ import { feedbackService } from "../../services/feedback/feedbackService";
 import { FeedbackRating } from "../../types/feedback";
 import { showToast } from "../../utils/toast";
 import styles from "./feedback-modal.module.css";
+import CircularProgress from "@mui/material/CircularProgress";
 
 interface FeedbackModalProps {
   open: boolean;
@@ -118,7 +119,26 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
           variant="contained"
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Gönderiliyor..." : "Gönder"}
+          {isSubmitting ? (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "100%",
+              }}
+            >
+              <CircularProgress size={20} sx={{ mr: 1.5, color: "#fff" }} />
+              <Typography
+                variant="body2"
+                sx={{ color: "#fff", fontWeight: 500 }}
+              >
+                Gönderiliyor...
+              </Typography>
+            </Box>
+          ) : (
+            "Gönder"
+          )}
         </Button>
       </DialogActions>
     </Dialog>

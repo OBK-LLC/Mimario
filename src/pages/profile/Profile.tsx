@@ -26,6 +26,7 @@ import { showToast } from "../../utils/toast";
 import { userService } from "../../services/user/userService";
 import type { UserUsageResponse } from "../../types/usage";
 import styles from "./profile.module.css";
+import CircularProgress from "@mui/material/CircularProgress";
 
 interface ProfileData {
   fullName: string;
@@ -66,6 +67,8 @@ const Profile: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [usageData, setUsageData] = useState<UserUsageResponse | null>(null);
+  const [isSubmittingProfile, setIsSubmittingProfile] = useState(false);
+  const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -121,6 +124,7 @@ const Profile: React.FC = () => {
 
   const handleProfileSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setIsSubmittingProfile(true);
     try {
       const response = await fetch(
         `${
@@ -154,24 +158,26 @@ const Profile: React.FC = () => {
       showToast.error(
         "Profil güncellenirken bir hata oluştu. Lütfen tekrar deneyin."
       );
+    } finally {
+      setIsSubmittingProfile(false);
     }
   };
 
   const handleSubmitPassword = async (e: FormEvent) => {
     e.preventDefault();
-
-    // Validation
-    if (passwordData.newPassword.length < 8) {
-      showToast.error("Yeni şifre en az 8 karakter olmalıdır.");
-      return;
-    }
-
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      showToast.error("Şifreler eşleşmiyor.");
-      return;
-    }
-
+    setIsSubmittingPassword(true);
     try {
+      // Validation
+      if (passwordData.newPassword.length < 8) {
+        showToast.error("Yeni şifre en az 8 karakter olmalıdır.");
+        return;
+      }
+
+      if (passwordData.newPassword !== passwordData.confirmPassword) {
+        showToast.error("Şifreler eşleşmiyor.");
+        return;
+      }
+
       await changePassword(passwordData.newPassword);
 
       // Başarılı olduğunda formu temizle
@@ -182,6 +188,8 @@ const Profile: React.FC = () => {
     } catch (error) {
       console.error("Password change error:", error);
       showToast.error("Şifre değiştirilemedi. Lütfen tekrar deneyin.");
+    } finally {
+      setIsSubmittingPassword(false);
     }
   };
 
@@ -508,8 +516,31 @@ const Profile: React.FC = () => {
                 color="primary"
                 fullWidth
                 className={styles.button}
+                disabled={isSubmittingProfile}
               >
-                Değişiklikleri Kaydet
+                {isSubmittingProfile ? (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "100%",
+                    }}
+                  >
+                    <CircularProgress
+                      size={20}
+                      sx={{ mr: 1.5, color: "#fff" }}
+                    />
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "#fff", fontWeight: 500 }}
+                    >
+                      Kaydediliyor...
+                    </Typography>
+                  </Box>
+                ) : (
+                  "Değişiklikleri Kaydet"
+                )}
               </Button>
               <Collapse in={!!profileMessage}>
                 <Alert severity={profileMessage?.type || "info"} sx={{ mt: 2 }}>
@@ -582,8 +613,31 @@ const Profile: React.FC = () => {
                 color="primary"
                 fullWidth
                 className={styles.submitButton}
+                disabled={isSubmittingPassword}
               >
-                Şifreyi Değiştir
+                {isSubmittingPassword ? (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "100%",
+                    }}
+                  >
+                    <CircularProgress
+                      size={20}
+                      sx={{ mr: 1.5, color: "#fff" }}
+                    />
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "#fff", fontWeight: 500 }}
+                    >
+                      Şifre Değiştiriliyor...
+                    </Typography>
+                  </Box>
+                ) : (
+                  "Şifreyi Değiştir"
+                )}
               </Button>
             </form>
           </Paper>

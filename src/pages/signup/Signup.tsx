@@ -11,6 +11,7 @@ import {
   Checkbox,
   LinearProgress,
   Alert,
+  CircularProgress,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
@@ -304,7 +305,26 @@ const Signup = () => {
               fullWidth
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Kayıt Olunuyor..." : "Kayıt Ol"}
+              {isSubmitting ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: "100%",
+                  }}
+                >
+                  <CircularProgress size={20} sx={{ mr: 1.5, color: "#fff" }} />
+                  <Typography
+                    variant="body2"
+                    sx={{ color: "#fff", fontWeight: 500 }}
+                  >
+                    Kayıt Yapılıyor...
+                  </Typography>
+                </Box>
+              ) : (
+                "Kayıt Ol"
+              )}
             </Button>
           </div>
         </form>
