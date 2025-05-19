@@ -56,7 +56,6 @@ const Chat: React.FC<ChatPageProps> = ({
   const { user } = useAuth();
   const theme = useTheme();
   const navigate = useNavigate();
-  
 
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -73,15 +72,28 @@ const Chat: React.FC<ChatPageProps> = ({
   const fetchUsageLimits = async () => {
     try {
       const usage = await sessionService.getSessionUsage();
+      if (
+        !usage ||
+        !usage.daily ||
+        typeof usage.daily.current !== "number" ||
+        typeof usage.daily.limit !== "number" ||
+        !usage.monthly ||
+        typeof usage.monthly.current !== "number" ||
+        typeof usage.monthly.limit !== "number"
+      ) {
+        setUsageLimits(null);
+        setShowUsageWarning(false);
+        return;
+      }
       setUsageLimits(usage);
 
-      if (usage) {
-        const dailyPercentage = (usage.daily.current / usage.daily.limit) * 100;
-        const monthlyPercentage = (usage.monthly.current / usage.monthly.limit) * 100;
-
-        setShowUsageWarning(dailyPercentage >= 90 || monthlyPercentage >= 90);
-      }
+      const dailyPercentage = (usage.daily.current / usage.daily.limit) * 100;
+      const monthlyPercentage =
+        (usage.monthly.current / usage.monthly.limit) * 100;
+      setShowUsageWarning(dailyPercentage >= 90 || monthlyPercentage >= 90);
     } catch (error) {
+      setUsageLimits(null);
+      setShowUsageWarning(false);
       console.error("Usage limits fetch error:", error);
     }
   };
@@ -101,12 +113,16 @@ const Chat: React.FC<ChatPageProps> = ({
         const { daily, monthly } = usageLimits;
 
         if (daily.current >= daily.limit) {
-          showToast.error("Günlük mesaj limitinize ulaştınız. Yarın tekrar deneyin.");
+          showToast.error(
+            "Günlük mesaj limitinize ulaştınız. Yarın tekrar deneyin."
+          );
           return;
         }
 
         if (monthly.current >= monthly.limit) {
-          showToast.error("Aylık mesaj limitinize ulaştınız. Gelecek ay tekrar deneyin.");
+          showToast.error(
+            "Aylık mesaj limitinize ulaştınız. Gelecek ay tekrar deneyin."
+          );
           return;
         }
       }
@@ -140,12 +156,14 @@ const Chat: React.FC<ChatPageProps> = ({
             <AlertTitle>Limit Uyarısı</AlertTitle>
             {usageLimits.daily.current >= usageLimits.daily.limit * 0.9 && (
               <div>
-                Günlük limit: {usageLimits.daily.current}/{usageLimits.daily.limit}
+                Günlük limit: {usageLimits.daily.current}/
+                {usageLimits.daily.limit}
               </div>
             )}
             {usageLimits.monthly.current >= usageLimits.monthly.limit * 0.9 && (
               <div>
-                Aylık limit: {usageLimits.monthly.current}/{usageLimits.monthly.limit}
+                Aylık limit: {usageLimits.monthly.current}/
+                {usageLimits.monthly.limit}
               </div>
             )}
           </Alert>
@@ -199,7 +217,7 @@ const Chat: React.FC<ChatPageProps> = ({
               "& .MuiButton-startIcon": {
                 color: "inherit !important",
               },
-            }
+            },
           }}
         >
           Profil

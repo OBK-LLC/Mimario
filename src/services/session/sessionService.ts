@@ -31,11 +31,14 @@ class SessionService {
         let message = this.getLocalizedErrorMessage(errorData.message);
 
         // Limit detayları varsa mesaja ekle
-        if (errorData.details?.current !== undefined && errorData.details?.limit !== undefined) {
+        if (
+          errorData.details?.current !== undefined &&
+          errorData.details?.limit !== undefined
+        ) {
           const { current, limit, type } = errorData.details;
-          if (type === 'daily') {
+          if (type === "daily") {
             message += ` (${current}/${limit} günlük limit)`;
-          } else if (type === 'monthly') {
+          } else if (type === "monthly") {
             message += ` (${current}/${limit} aylık limit)`;
           }
         }
@@ -43,23 +46,32 @@ class SessionService {
         throw new Error(message);
       }
     }
-    throw new Error("Beklenmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyin.");
+    throw new Error(
+      "Beklenmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyin."
+    );
   }
 
   private getLocalizedErrorMessage(message: string): string {
     const errorMessages: Record<string, string> = {
       "Daily session limit of X reached.": "Günlük oturum limitinize ulaştınız",
-      "Monthly session limit of X reached.": "Aylık oturum limitinize ulaştınız",
-      "Cannot create session: User profile not found...": "Oturum oluşturulamadı: Kullanıcı profili bulunamadı",
-      "Could not verify daily/monthly session limit...": "Oturum limiti kontrol edilemedi",
-      "Cannot send message. Adding this interaction...would exceed your session message limit": "Bu mesajı gönderemezsiniz. Oturum mesaj limitine ulaştınız",
-      "Cannot process message: User profile could not be retrieved...": "Mesaj işlenemedi: Kullanıcı profili alınamadı",
-      "Message limit per session would be exceeded...": "Bu oturum için mesaj limitine ulaştınız",
+      "Monthly session limit of X reached.":
+        "Aylık oturum limitinize ulaştınız",
+      "Cannot create session: User profile not found...":
+        "Oturum oluşturulamadı: Kullanıcı profili bulunamadı",
+      "Could not verify daily/monthly session limit...":
+        "Oturum limiti kontrol edilemedi",
+      "Cannot send message. Adding this interaction...would exceed your session message limit":
+        "Bu mesajı gönderemezsiniz. Oturum mesaj limitine ulaştınız",
+      "Cannot process message: User profile could not be retrieved...":
+        "Mesaj işlenemedi: Kullanıcı profili alınamadı",
+      "Message limit per session would be exceeded...":
+        "Bu oturum için mesaj limitine ulaştınız",
       "Session not found": "Oturum bulunamadı",
       "Invalid session ID": "Geçersiz oturum ID'si",
       "Session expired": "Oturum süresi doldu",
-      "Unauthorized": "Oturum yetkisiz",
-      "Rate limit exceeded": "Çok fazla istek gönderdiniz. Lütfen biraz bekleyin",
+      Unauthorized: "Oturum yetkisiz",
+      "Rate limit exceeded":
+        "Çok fazla istek gönderdiniz. Lütfen biraz bekleyin",
     };
 
     return errorMessages[message] || message;
@@ -136,7 +148,9 @@ class SessionService {
 
   async updateSessionMessages(sessionId: string, userQuery: string) {
     try {
-      const response = await axios.put<ApiResponse<{answer: string; sources: any[]}>>(
+      const response = await axios.put<
+        ApiResponse<{ answer: string; sources: any[] }>
+      >(
         `${API_URL}/api/v1/sessions/${sessionId}/messages`,
         { userQuery },
         { headers: this.headers }
@@ -152,10 +166,9 @@ class SessionService {
     monthly: { current: number; limit: number };
   }> {
     try {
-      const response = await axios.get(
-        `${API_URL}/api/v1/users/me/usage`,
-        { headers: this.headers }
-      );
+      const response = await axios.get(`${API_URL}/api/users/me/usage`, {
+        headers: this.headers,
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
