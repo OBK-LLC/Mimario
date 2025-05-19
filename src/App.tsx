@@ -28,6 +28,7 @@ import { sessionService } from "./services/session/sessionService";
 import { useSession } from "./hooks/useSession";
 import LoadingScreen from "./components/loading-screen/LoadingScreen";
 import { AdminGuard } from "./components/guards/AdminGuard";
+import { normalizeMessage } from "./services/session/sessionService";
 
 const THEME_MODE_KEY = "mimario-theme-mode";
 
@@ -120,7 +121,7 @@ function AppContent() {
 
       if (response && response.data) {
         setSelectedChatId(response.data.id);
-        setMessages(response.data.messages || []);
+        setMessages((response.data.messages || []).map(normalizeMessage));
         navigate(`/chat/${response.data.id}`);
       } else {
         throw new Error("Sohbet oluşturulamadı");
@@ -138,7 +139,7 @@ function AppContent() {
     const selectedChat = chatHistories.find((chat) => chat.id === chatId);
     if (selectedChat) {
       setSelectedChatId(chatId);
-      setMessages(selectedChat.messages || []);
+      setMessages((selectedChat.messages || []).map(normalizeMessage));
       navigate(`/chat/${chatId}`);
     }
   };
@@ -148,7 +149,7 @@ function AppContent() {
       sessionService
         .getSessionMessages(selectedChatId)
         .then((response) => {
-          setMessages(response.data || []);
+          setMessages((response.data || []).map(normalizeMessage));
         })
         .catch((error) => {
           console.error("Failed to fetch messages:", error);
@@ -164,7 +165,7 @@ function AppContent() {
         const lastChat = chatHistories[chatHistories.length - 1];
         if (lastChat) {
           setSelectedChatId(lastChat.id);
-          setMessages(lastChat.messages || []);
+          setMessages((lastChat.messages || []).map(normalizeMessage));
           navigate(`/chat/${lastChat.id}`);
         } else {
           setSelectedChatId(undefined);
@@ -204,7 +205,7 @@ function AppContent() {
       timestamp: Date.now(),
     };
 
-    setMessages((prev) => [...prev, newMessage]);
+    setMessages((prev) => [...prev, normalizeMessage(newMessage)]);
     setIsGenerating(true);
 
     try {
@@ -223,7 +224,7 @@ function AppContent() {
           sources: response.data.sources,
         };
 
-        setMessages((prev) => [...prev, aiResponse]);
+        setMessages((prev) => [...prev, normalizeMessage(aiResponse)]);
       } else {
         throw new Error(response.message || "Yanıt alınamadı");
       }
@@ -231,7 +232,9 @@ function AppContent() {
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
-        toast.error("Mesaj gönderilirken bir hata oluştu. Lütfen tekrar deneyin.");
+        toast.error(
+          "Mesaj gönderilirken bir hata oluştu. Lütfen tekrar deneyin."
+        );
       }
 
       setMessages((prev) => prev.slice(0, -1));

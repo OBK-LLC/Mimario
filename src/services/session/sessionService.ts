@@ -14,7 +14,7 @@ export interface ErrorResponse {
   };
 }
 
-function normalizeMessage(msg: any) {
+export function normalizeMessage(msg: any) {
   return {
     ...msg,
     timestamp: msg.timestamp
