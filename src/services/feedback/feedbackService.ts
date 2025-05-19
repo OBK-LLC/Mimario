@@ -70,11 +70,18 @@ class FeedbackService {
         }
       );
 
-
       return {
-        feedbacks: response.data.data.map((feedback) => ({
+        feedbacks: response.data.data.map((feedback: any) => ({
           ...feedback,
           user: feedback.user || undefined,
+          targetMessage:
+            typeof feedback.target_message === "string"
+              ? JSON.parse(feedback.target_message)
+              : feedback.target_message,
+          createdAt: feedback.created_at,
+          sessionId: feedback.session_id,
+          messageId: feedback.message_id,
+          userId: feedback.user_id,
         })),
         page: response.data.pagination.page,
         limit: response.data.pagination.limit,

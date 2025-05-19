@@ -190,7 +190,11 @@ const FeedbackList: React.FC = () => {
                   <TableCell>
                     <div className={styles.messageContent}>
                       <Typography variant="body2">
-                        {feedback.targetMessage.content}
+                        {feedback.targetMessage?.content || (
+                          <Typography variant="caption" color="textSecondary">
+                            Mesaj bulunamadı
+                          </Typography>
+                        )}
                       </Typography>
                     </div>
                   </TableCell>
@@ -285,6 +289,12 @@ const FeedbackList: React.FC = () => {
                       "2121d76d-6554-4876-9200-a16a160feec4"}
                   </span>
                 </Typography>
+                <Typography variant="body2" className={styles.userDetailRow}>
+                  <span className={styles.userDetailLabel}>E-posta:</span>
+                  <span className={styles.userDetailValue}>
+                    {selectedFeedback?.user?.email || "-"}
+                  </span>
+                </Typography>
               </div>
             </div>
 
@@ -317,7 +327,7 @@ const FeedbackList: React.FC = () => {
               </div>
               <div className={styles.infoContent}>
                 <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
-                  {selectedFeedback?.targetMessage.content}
+                  {selectedFeedback?.targetMessage?.content || "-"}
                 </Typography>
               </div>
             </div>
