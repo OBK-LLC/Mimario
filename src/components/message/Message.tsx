@@ -126,7 +126,7 @@ export const Message: React.FC<MessageProps> = ({
               <Typography
                 variant="body2"
                 color="text.secondary"
-                sx={{ flex: 1 }}
+                sx={{ flex: 1, paddingLeft: 2 }}
               >
                 Kaynaklar ({sources.length})
               </Typography>
