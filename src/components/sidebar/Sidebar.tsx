@@ -28,6 +28,7 @@ import {
 } from "@mui/icons-material";
 import { SidebarProps } from "../../types/chat";
 import styles from "./sidebar.module.css";
+import CircularProgress from "@mui/material/CircularProgress";
 
 interface EditDialogProps {
   open: boolean;
@@ -106,6 +107,7 @@ export const Sidebar: React.FC<ExtendedSidebarProps> = ({
     id: string;
     title: string;
   } | null>(null);
+  const [isStartingChat, setIsStartingChat] = useState(false);
 
   const handleDelete = (e: React.MouseEvent, chatId: string) => {
     e.stopPropagation();
@@ -129,6 +131,15 @@ export const Sidebar: React.FC<ExtendedSidebarProps> = ({
     setEditingChat(null);
   };
 
+  const handleNewChat = async () => {
+    setIsStartingChat(true);
+    try {
+      await onNewChat();
+    } finally {
+      setIsStartingChat(false);
+    }
+  };
+
   return (
     <Box
       className={styles.sidebar}
@@ -143,7 +154,7 @@ export const Sidebar: React.FC<ExtendedSidebarProps> = ({
           className={styles.newChatButton}
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={onNewChat}
+          onClick={handleNewChat}
           sx={{
             backgroundColor: "primary.main",
             color: "primary.contrastText",
@@ -151,8 +162,35 @@ export const Sidebar: React.FC<ExtendedSidebarProps> = ({
               backgroundColor: "primary.dark",
             },
           }}
+          disabled={isStartingChat}
         >
-          Yeni Sohbet
+          {isStartingChat ? (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "100%",
+              }}
+            >
+              <CircularProgress
+                size={20}
+                thickness={4}
+                sx={{ color: isDarkMode ? "#fff" : "primary.main", mr: 1.5 }}
+              />
+              <Typography
+                variant="body2"
+                sx={{
+                  color: isDarkMode ? "#fff" : "primary.main",
+                  fontWeight: 500,
+                }}
+              >
+                Başlatılıyor...
+              </Typography>
+            </Box>
+          ) : (
+            "Yeni Sohbet"
+          )}
         </Button>
       </Box>
       <Divider />

@@ -38,6 +38,8 @@ import { ChatHistory } from "../../types/chat";
 import { useTheme } from "@mui/material/styles";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import LoadingMessage from "../loading-message/LoadingMessage";
+import CircularProgress from "@mui/material/CircularProgress";
 
 interface EditDialogProps {
   open: boolean;
@@ -121,6 +123,8 @@ export const Welcome: React.FC<WelcomeProps> = ({
     title: string;
   } | null>(null);
   const theme = useTheme();
+  const [isStartingChat, setIsStartingChat] = useState(false);
+  const isDarkMode = theme.palette.mode === "dark";
 
   const handleDelete = (e: React.MouseEvent, chatId: string) => {
     e.stopPropagation();
@@ -142,6 +146,15 @@ export const Welcome: React.FC<WelcomeProps> = ({
       onEditChatTitle(editingChat.id, newTitle);
     }
     setEditingChat(null);
+  };
+
+  const handleStartChat = async () => {
+    setIsStartingChat(true);
+    try {
+      await onStartChat();
+    } finally {
+      setIsStartingChat(false);
+    }
   };
 
   const containerVariants = {
@@ -239,7 +252,8 @@ export const Welcome: React.FC<WelcomeProps> = ({
                     bgcolor: "rgba(0, 0, 0, 0.04)",
                     borderColor: (theme) =>
                       `${theme.palette.primary.main} !important`,
-                    color: (theme) => `${theme.palette.primary.main} !important`,
+                    color: (theme) =>
+                      `${theme.palette.primary.main} !important`,
                   },
                 }}
               >
@@ -405,7 +419,7 @@ export const Welcome: React.FC<WelcomeProps> = ({
                     whileTap="tap"
                   >
                     <Button
-                      onClick={onStartChat}
+                      onClick={handleStartChat}
                       variant="contained"
                       color="primary"
                       size="large"
@@ -416,6 +430,8 @@ export const Welcome: React.FC<WelcomeProps> = ({
                         borderRadius: 2,
                         textTransform: "none",
                         fontSize: "1rem",
+                        minWidth: 180,
+                        position: "relative",
                         "&:hover": {
                           color: "#fff",
                           "& .MuiButton-startIcon": {
@@ -423,8 +439,38 @@ export const Welcome: React.FC<WelcomeProps> = ({
                           },
                         },
                       }}
+                      disabled={isStartingChat}
                     >
-                      Yeni Sohbet Başlat
+                      {isStartingChat ? (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: "100%",
+                          }}
+                        >
+                          <CircularProgress
+                            size={20}
+                            thickness={4}
+                            sx={{
+                              color: isDarkMode ? "#fff" : "primary.main",
+                              mr: 1.5,
+                            }}
+                          />
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: isDarkMode ? "#fff" : "primary.main",
+                              fontWeight: 500,
+                            }}
+                          >
+                            Başlatılıyor...
+                          </Typography>
+                        </Box>
+                      ) : (
+                        "Yeni Sohbet Başlat"
+                      )}
                     </Button>
                   </motion.div>
 
