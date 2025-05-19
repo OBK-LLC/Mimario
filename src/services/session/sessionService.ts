@@ -14,6 +14,20 @@ export interface ErrorResponse {
   };
 }
 
+function normalizeMessage(msg: any) {
+  return {
+    ...msg,
+    timestamp: msg.timestamp
+      ? typeof msg.timestamp === "string"
+        ? new Date(msg.timestamp).getTime()
+        : msg.timestamp
+      : msg.createdAt
+      ? new Date(msg.createdAt).getTime()
+      : Date.now(),
+    sender: msg.role === "assistant" ? "ai" : "user",
+  };
+}
+
 class SessionService {
   private get headers() {
     const tokens = tokenStorage.getTokens();
@@ -140,7 +154,9 @@ class SessionService {
         `${API_URL}/api/v1/sessions/${sessionId}/messages`,
         { headers: this.headers }
       );
-      return response.data;
+      // Mesajları normalize et
+      const messages = (response.data?.data || []).map(normalizeMessage);
+      return { ...response.data, data: messages };
     } catch (error) {
       throw this.handleError(error);
     }
