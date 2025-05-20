@@ -156,3 +156,17 @@ Proje Linki: [https://github.com/OBK-LLC/Mimario](https://github.com/OBK-LLC/Mim
 ---
 
 ⭐️ **Mimario - Mimarların dijital asistanı** ⭐️
+
+
+import { event } from '../utils/analytics';
+
+// Bir butona tıklama olayını izleme
+const handleButtonClick = () => {
+  event({
+    action: 'button_click',
+    category: 'user_interaction',
+    label: 'login_button'
+  });
+  
+  // Diğer işlemler...
+};
