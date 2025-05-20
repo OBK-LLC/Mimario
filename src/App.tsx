@@ -30,7 +30,6 @@ import LoadingScreen from "./components/loading-screen/LoadingScreen";
 import { AdminGuard } from "./components/guards/AdminGuard";
 import { normalizeMessage } from "./services/session/sessionService";
 import ErrorBoundary from "./components/ErrorBoundary";
-import { useAnalytics } from "./hooks/useAnalytics";
 
 const THEME_MODE_KEY = "mimario-theme-mode";
 
@@ -271,10 +270,6 @@ function AppContent() {
     onSendMessage: handleSendMessage,
     onLogout: handleLogout,
   };
-
-  // Google Analytics için sayfa görüntülemelerini izle
-  useAnalytics();
-
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
