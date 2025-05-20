@@ -428,7 +428,7 @@ const Profile: React.FC = () => {
                             color: "text.secondary",
                           }}
                         >
-                          5000
+                          {usageData.limits.max_messages_per_session}
                         </Typography>
                       </Box>
                     </Box>
